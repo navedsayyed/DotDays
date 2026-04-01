@@ -4,6 +4,7 @@ import 'core/theme/app_theme.dart';
 import 'routes/app_router.dart';
 import 'services/storage_service.dart';
 import 'services/background_service.dart';
+import 'services/wallpaper_auto_updater.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -11,6 +12,9 @@ void main() async {
   // Initialize services
   await StorageService.init();
   await BackgroundService.init();
+
+  // Auto-update wallpaper if day changed (fallback for background task)
+  WallpaperAutoUpdater.checkAndUpdate();
 
   runApp(const ProviderScope(child: LifeInDotsApp()));
 }

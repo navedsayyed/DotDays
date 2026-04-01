@@ -29,4 +29,5 @@ class AppConstants {
   static const String keyShowDayCounter = 'show_day_counter';
   static const String keyLivedDotColor = 'lived_dot_color';
   static const String keyOnboardingComplete = 'onboarding_complete';
+  static const String keyWallpaperLocation = 'wallpaper_location';
 }

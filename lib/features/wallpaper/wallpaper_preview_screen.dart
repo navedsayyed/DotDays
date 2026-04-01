@@ -5,6 +5,7 @@ import '../../shared/providers/app_settings_provider.dart';
 import '../../shared/widgets/app_button.dart';
 import '../../core/theme/app_colors.dart';
 import '../../services/wallpaper_service.dart';
+import '../../services/storage_service.dart';
 import '../../services/background_service.dart';
 import '../../routes/app_router.dart';
 import '../wallpaper/wallpaper_canvas.dart';
@@ -20,7 +21,7 @@ class WallpaperPreviewScreen extends ConsumerStatefulWidget {
 class _WallpaperPreviewScreenState
     extends ConsumerState<WallpaperPreviewScreen> {
   final _boundaryKey = GlobalKey();
-  int _selectedLocation = WallpaperService.locationLockScreen;
+  int _selectedLocation = WallpaperService.locationBothScreens;
   bool _applying = false;
 
   Future<void> _apply() async {
@@ -32,6 +33,8 @@ class _WallpaperPreviewScreenState
       if (file == null) throw Exception('Failed to capture widget');
       final ok = await WallpaperService.applyWallpaper(file, _selectedLocation);
       if (ok) {
+        // Save wallpaper location so background task can re-apply to same screen
+        await StorageService.setWallpaperLocation(_selectedLocation);
         final settings = ref.read(appSettingsProvider);
         if (settings.autoUpdate) await BackgroundService.scheduleDaily();
         await ref.read(appSettingsProvider.notifier).setOnboardingComplete(true);

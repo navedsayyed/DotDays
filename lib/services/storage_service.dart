@@ -74,4 +74,15 @@ class StorageService {
       _prefs.getBool(AppConstants.keyOnboardingComplete) ?? false;
   static Future<void> setOnboardingComplete(bool val) =>
       _prefs.setBool(AppConstants.keyOnboardingComplete, val);
+
+  // Wallpaper location (home=1, lock=2, both=3)
+  static int getWallpaperLocation() =>
+      _prefs.getInt(AppConstants.keyWallpaperLocation) ?? 3;
+  static Future<void> setWallpaperLocation(int location) =>
+      _prefs.setInt(AppConstants.keyWallpaperLocation, location);
+
+  // Generic string get/set (for misc keys like last-update-day)
+  static String? getString(String key) => _prefs.getString(key);
+  static Future<void> setString(String key, String val) =>
+      _prefs.setString(key, val);
 }
