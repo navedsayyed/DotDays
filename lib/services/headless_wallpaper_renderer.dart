@@ -44,11 +44,14 @@ class HeadlessWallpaperRenderer {
         Paint()..color = _background,
       );
 
-      // Safe area padding
+      // Safe area padding — proportions must match WallpaperCanvas widget
+      // so that initial-set and background-update wallpapers look identical.
       final topPad = _height * AppConstants.wallpaperTopSafePercent;
       final botPad = _height * 0.04;
-      final leftPad = 60.0;
-      final rightPad = 60.0;
+      // Widget canvas uses 20px on ~147px width = ~13.6% each side.
+      // Match that proportion here for consistent dot sizing.
+      final leftPad = _width * 0.136;
+      final rightPad = _width * 0.136;
 
       final contentWidth = _width - leftPad - rightPad;
       final contentHeight = _height - topPad - botPad;
@@ -251,13 +254,19 @@ class HeadlessWallpaperRenderer {
     final dotSize = step - spacing;
     final r = dotSize / 2;
 
+    // Center the grid within the content area when it doesn't fill it
+    final gridWidth = cols * step;
+    final offsetX = (width - gridWidth) / 2;
+    // Keep grid top-aligned (no vertical centering) to match widget layout
+    final offsetY = 0.0;
+
     final livedP = Paint()..color = livedColor;
     final todayP = Paint()..color = _dotToday;
     final futureP = Paint()..color = _dotFuture;
 
     for (int i = 0; i < total; i++) {
-      final cx = left + (i % cols) * step + r;
-      final cy = top + (i ~/ cols) * step + r;
+      final cx = left + offsetX + (i % cols) * step + r;
+      final cy = top + offsetY + (i ~/ cols) * step + r;
       final offset = Offset(cx, cy);
 
       Paint p;

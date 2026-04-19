@@ -5,6 +5,7 @@ import '../../shared/providers/app_settings_provider.dart';
 import '../../shared/widgets/app_button.dart';
 import '../../core/theme/app_colors.dart';
 import '../../services/wallpaper_service.dart';
+import '../../services/headless_wallpaper_renderer.dart';
 import '../../services/storage_service.dart';
 import '../../services/background_service.dart';
 import '../../routes/app_router.dart';
@@ -29,13 +30,23 @@ class _WallpaperPreviewScreenState
     bool success = false;
     String? errorMsg;
     try {
-      final file = await WallpaperService.captureWidget(_boundaryKey);
-      if (file == null) throw Exception('Failed to capture widget');
+      // Use the same HeadlessWallpaperRenderer used by the background task
+      // so the wallpaper looks identical on initial set and daily auto-update.
+      final settings = ref.read(appSettingsProvider);
+      final file = await HeadlessWallpaperRenderer.render(
+        calendarType: settings.calendarType,
+        dateOfBirth: settings.dateOfBirth,
+        lifespan: settings.lifespan,
+        goalName: settings.goalName,
+        goalStart: settings.goalStart,
+        goalEnd: settings.goalEnd,
+        livedDotColor: settings.livedDotColor,
+      );
+      if (file == null) throw Exception('Failed to render wallpaper');
       final ok = await WallpaperService.applyWallpaper(file, _selectedLocation);
       if (ok) {
         // Save wallpaper location so background task can re-apply to same screen
         await StorageService.setWallpaperLocation(_selectedLocation);
-        final settings = ref.read(appSettingsProvider);
         if (settings.autoUpdate) await BackgroundService.scheduleDaily();
         await ref.read(appSettingsProvider.notifier).setOnboardingComplete(true);
         success = true;
