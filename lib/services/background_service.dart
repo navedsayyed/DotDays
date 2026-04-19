@@ -13,6 +13,22 @@ void callbackDispatcher() {
     try {
       // Re-init storage since this runs in a separate isolate
       await StorageService.init();
+
+      final autoUpdate = StorageService.getAutoUpdate();
+      if (!autoUpdate) return Future.value(true);
+
+      final onboardingDone = StorageService.getOnboardingComplete();
+      if (!onboardingDone) return Future.value(true);
+
+      // Check if already updated today
+      final now = DateTime.now();
+      final todayKey = '${now.year}-${now.month}-${now.day}';
+      final lastUpdate = StorageService.getString('wallpaper_last_update_day');
+      if (lastUpdate == todayKey) {
+        debugPrint('BackgroundService: already updated today, skipping');
+        return Future.value(true);
+      }
+
       debugPrint('BackgroundService: daily wallpaper update starting');
 
       // Read settings from storage
@@ -45,8 +61,6 @@ void callbackDispatcher() {
             await WallpaperService.applyWallpaper(file, wallpaperLocation);
         if (success) {
           // Track last update day so app-launch updater doesn't duplicate
-          final now = DateTime.now();
-          final todayKey = '${now.year}-${now.month}-${now.day}';
           await StorageService.setString(
               'wallpaper_last_update_day', todayKey);
         }
@@ -67,33 +81,45 @@ class BackgroundService {
 
   static Future<void> init() async {
     if (!Platform.isAndroid) return;
-    await Workmanager().initialize(callbackDispatcher);
+    await Workmanager().initialize(callbackDispatcher, isInDebugMode: false);
   }
 
+  /// Schedule the periodic wallpaper update task.
+  /// Runs every 15 minutes (Android's minimum interval for WorkManager).
+  /// The task itself checks if the day has changed before doing any work.
+  /// No initialDelay — we want the first run ASAP after scheduling.
   static Future<void> scheduleDaily() async {
     if (!Platform.isAndroid) return;
     await Workmanager().registerPeriodicTask(
       AppConstants.workerUniqueName,
       AppConstants.workerTaskName,
       frequency: const Duration(minutes: 15),
-      initialDelay: _timeUntilMidnight(),
+      // NO initialDelay — run the first check immediately
       constraints: Constraints(
         networkType: NetworkType.notRequired,
         requiresBatteryNotLow: false,
       ),
-      existingWorkPolicy: ExistingPeriodicWorkPolicy.replace,
+      existingWorkPolicy: ExistingPeriodicWorkPolicy.keep,
+      // Keep existing task instead of replacing, so reboots don't reset timing
+      backoffPolicy: BackoffPolicy.linear,
+      backoffPolicyDelay: const Duration(minutes: 5),
     );
-    debugPrint('BackgroundService: daily task scheduled');
+    debugPrint('BackgroundService: periodic task scheduled (every 15 min)');
+  }
+
+  /// Re-schedule the task — useful on app launch to ensure it's still alive.
+  /// Uses KEEP policy so it doesn't interfere if already scheduled.
+  static Future<void> ensureScheduled() async {
+    if (!Platform.isAndroid) return;
+    final autoUpdate = StorageService.getAutoUpdate();
+    final onboardingDone = StorageService.getOnboardingComplete();
+    if (autoUpdate && onboardingDone) {
+      await scheduleDaily();
+    }
   }
 
   static Future<void> cancel() async {
     if (!Platform.isAndroid) return;
     await Workmanager().cancelByUniqueName(AppConstants.workerUniqueName);
-  }
-
-  static Duration _timeUntilMidnight() {
-    final now = DateTime.now();
-    final midnight = DateTime(now.year, now.month, now.day + 1);
-    return midnight.difference(now);
   }
 }
