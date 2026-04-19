@@ -1,0 +1,135 @@
+name: Build DotDays APK
+
+on:
+  push:
+    branches:
+      - main
+  workflow_dispatch:
+
+jobs:
+  build:
+    name: Build APK
+    runs-on: ubuntu-latest
+    timeout-minutes: 60
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Java JDK
+        uses: actions/setup-java@v4
+        with:
+          distribution: 'temurin'
+          java-version: '17'
+          cache: 'gradle'
+
+      - name: Setup Flutter
+        uses: subosito/flutter-action@v2
+        with:
+          flutter-version: '3.29.3'
+          channel: 'stable'
+          cache: true
+
+      - name: Install dependencies
+        run: flutter pub get
+
+      - name: Build split APKs
+        run: flutter build apk --split-per-abi --release
+
+      - name: Rename main APK to DotDays
+        run: |
+          cd build/app/outputs/flutter-apk
+          cp app-arm64-v8a-release.apk DotDays.apk
+
+      - name: Upload APKs as Artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: dotdays-release-apks
+          path: |
+            build/app/outputs/flutter-apk/DotDays.apk
+            build/app/outputs/flutter-apk/app-armeabi-v7a-release.apk
+            build/app/outputs/flutter-apk/app-x86_64-release.apk
+            build/app/outputs/flutter-apk/app-x86-release.apk
+          retention-days: 30
+
+      - name: Get version info
+        id: version
+        run: |
+          VERSION=$(grep 'version:' pubspec.yaml | head -1 | awk '{print $2}' | cut -d'+' -f1)
+          echo "app_version=$VERSION" >> $GITHUB_OUTPUT
+          echo "date=$(date +'%Y.%m.%d')" >> $GITHUB_OUTPUT
+          echo "time=$(date +'%H%M')" >> $GITHUB_OUTPUT
+          echo "sha_short=$(git rev-parse --short HEAD)" >> $GITHUB_OUTPUT
+
+      - name: List built APKs
+        run: |
+          ls -lh build/app/outputs/flutter-apk/DotDays.apk
+          ls -lh build/app/outputs/flutter-apk/app-*-release.apk
+
+      - name: Create Release
+        uses: softprops/action-gh-release@v1
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          tag_name: v${{ steps.version.outputs.app_version }}-${{ steps.version.outputs.date }}
+          name: DotDays v${{ steps.version.outputs.app_version }}
+          body: |
+            ## 📱 DotDays — Life in Dots
+
+            **🎉 Download the APK for your device!**
+
+            ---
+
+            ### 📦 Which APK to Download?
+
+            **Most phones (recommended):**
+            👉 **DotDays.apk** — Modern 64-bit phones (arm64-v8a, most common)
+
+            **Older phones:**
+            👉 **app-armeabi-v7a-release.apk** — Older 32-bit phones
+
+            **Emulators / Rare devices:**
+            - app-x86_64-release.apk — 64-bit emulators
+            - app-x86-release.apk — 32-bit emulators
+
+            💡 **Not sure?** Download **DotDays.apk** first. If it doesn't install, try **armeabi-v7a**.
+
+            ---
+
+            ### ℹ️ How to Install
+            1. Download the APK file for your device
+            2. Open it on your Android phone
+            3. Enable "Install from unknown sources" if prompted
+            4. Tap Install
+            5. Done! 🚀
+
+            ---
+
+            **Build Info:**
+            - 📅 Date: ${{ steps.version.outputs.date }} at ${{ steps.version.outputs.time }} UTC
+            - 🔗 Commit: ${{ steps.version.outputs.sha_short }}
+            - 📦 Version: ${{ steps.version.outputs.app_version }}
+            - 🏗️ Built by: GitHub Actions
+
+            *Auto-generated release*
+          files: |
+            build/app/outputs/flutter-apk/DotDays.apk
+            build/app/outputs/flutter-apk/app-armeabi-v7a-release.apk
+            build/app/outputs/flutter-apk/app-x86_64-release.apk
+            build/app/outputs/flutter-apk/app-x86-release.apk
+          draft: false
+          prerelease: false
+
+      - name: Build Summary
+        if: success()
+        run: |
+          echo "## ✅ DotDays APK Built & Released!" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "### 📦 Download:" >> $GITHUB_STEP_SUMMARY
+          echo "- 📱 [All Releases](https://github.com/${{ github.repository }}/releases)" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "**APK Sizes:**" >> $GITHUB_STEP_SUMMARY
+          ls -lh build/app/outputs/flutter-apk/DotDays-*.apk | awk '{print "- " $9 ": " $5}' >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "📅 Built: ${{ steps.version.outputs.date }}" >> $GITHUB_STEP_SUMMARY
+          echo "🔗 Commit: ${{ steps.version.outputs.sha_short }}" >> $GITHUB_STEP_SUMMARY
