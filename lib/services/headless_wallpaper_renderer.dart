@@ -335,7 +335,7 @@ class HeadlessWallpaperRenderer {
       _textSecondary,
       fontSize,
       _width,
-      textAlign: TextAlign.center,
+      textAlign: TextAlign.left,
       parts: parts,
     );
 
