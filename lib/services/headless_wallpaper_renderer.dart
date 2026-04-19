@@ -83,6 +83,16 @@ class HeadlessWallpaperRenderer {
     }
   }
 
+  /// Helper to compute the actual grid height for text positioning.
+  static double _gridActualHeight(
+      double width, double height, int total, int cols) {
+    final rows = (total / cols).ceil();
+    final stepW = width / cols;
+    final stepH = height / rows;
+    final step = stepW < stepH ? stepW : stepH;
+    return rows * step;
+  }
+
   static void _renderYear(
     Canvas canvas,
     double left,
@@ -99,31 +109,45 @@ class HeadlessWallpaperRenderer {
     final remaining = total - dayOfYear;
     final percent = ((dayOfYear / total) * 100).round();
 
-    // Reserve space for bottom text
-    const bottomTextHeight = 40.0;
-    final gridHeight = height - bottomTextHeight;
-
+    // Draw grid using full content area (text goes below actual grid)
     _drawDotGrid(
       canvas,
       left: left,
       top: top,
       width: width,
-      height: gridHeight,
+      height: height,
       total: total,
-      lived: dayOfYear - 1, // 0-indexed for "today" highlight
+      lived: dayOfYear - 1,
       livedColor: _dotLived,
       fixedCols: 15,
     );
 
-    // Bottom text: "Xd left · X%"
+    // Proportional font size to match WallpaperCanvas widget preview
+    final fontSize = width * 0.047;
+    final gap = fontSize * 0.6;
+    final actualGridH = _gridActualHeight(width, height, total, 15);
+
+    // "Xd left · X%" — right below the grid
     _drawBottomText(
       canvas,
       centerX: left + width / 2,
-      y: top + height - 10,
+      y: top + actualGridH + gap,
+      fontSize: fontSize,
       parts: [
         _TextPart('${remaining}d left', _accent),
         _TextPart(' · ', _textDisabled),
         _TextPart('$percent%', _textSecondary),
+      ],
+    );
+
+    // "Personal" label below the stats (matches widget preview)
+    _drawBottomText(
+      canvas,
+      centerX: left + width / 2,
+      y: top + actualGridH + gap + fontSize * 1.3,
+      fontSize: fontSize * 0.9,
+      parts: [
+        _TextPart('Personal', _textSecondary),
       ],
     );
   }
@@ -145,25 +169,27 @@ class HeadlessWallpaperRenderer {
     final totalWeeks = lifespan * 52;
     final percent = ((weeksLived / totalWeeks) * 100).toStringAsFixed(1);
 
-    const bottomTextHeight = 40.0;
-    final gridHeight = height - bottomTextHeight;
-
     _drawDotGrid(
       canvas,
       left: left,
       top: top,
       width: width,
-      height: gridHeight,
+      height: height,
       total: totalWeeks,
       lived: weeksLived.clamp(0, totalWeeks),
       livedColor: livedColor,
       fixedCols: 52,
     );
 
+    final fontSize = width * 0.047;
+    final gap = fontSize * 0.6;
+    final actualGridH = _gridActualHeight(width, height, totalWeeks, 52);
+
     _drawBottomText(
       canvas,
       centerX: left + width / 2,
-      y: top + height - 10,
+      y: top + actualGridH + gap,
+      fontSize: fontSize,
       parts: [
         _TextPart('$percent%', _accent),
         _TextPart(' to $lifespan', _textSecondary),
@@ -189,12 +215,16 @@ class HeadlessWallpaperRenderer {
     final remaining = (total - completed).clamp(0, total);
     final percent = ((completed / total) * 100).round();
 
+    // Proportional font size
+    final fontSize = width * 0.047;
+
     // Draw goal name at top
     final nameText = goalName ?? 'My Goal';
+    final nameFontSize = fontSize * 1.2;
     final nameParagraph = _makeParagraph(
       nameText,
       _textSecondary,
-      21.0,
+      nameFontSize,
       width,
       textAlign: TextAlign.center,
       fontWeight: FontWeight.w500,
@@ -204,26 +234,31 @@ class HeadlessWallpaperRenderer {
       Offset(left, top),
     );
 
-    const nameHeight = 40.0;
-    const bottomTextHeight = 40.0;
-    final gridHeight = height - nameHeight - bottomTextHeight;
+    final nameHeight = nameFontSize * 2.5;
+    final gridTop = top + nameHeight;
+    final gridAvailHeight = height - nameHeight;
 
     _drawDotGrid(
       canvas,
       left: left,
-      top: top + nameHeight,
+      top: gridTop,
       width: width,
-      height: gridHeight,
+      height: gridAvailHeight,
       total: total,
       lived: completed.clamp(0, total),
       livedColor: _dotLived,
       fixedCols: 15,
     );
 
+    final gap = fontSize * 0.6;
+    final actualGridH =
+        _gridActualHeight(width, gridAvailHeight, total, 15);
+
     _drawBottomText(
       canvas,
       centerX: left + width / 2,
-      y: top + height - 10,
+      y: gridTop + actualGridH + gap,
+      fontSize: fontSize,
       parts: [
         _TextPart('${remaining}d left', _accent),
         _TextPart(' · ', _textDisabled),
@@ -286,6 +321,7 @@ class HeadlessWallpaperRenderer {
     required double centerX,
     required double y,
     required List<_TextPart> parts,
+    double fontSize = 36.0,
   }) {
     // Build a combined string and draw it centered
     final buffer = StringBuffer();
@@ -297,8 +333,8 @@ class HeadlessWallpaperRenderer {
     final paragraph = _makeParagraph(
       fullText,
       _textSecondary,
-      15.0,
-      600,
+      fontSize,
+      _width,
       textAlign: TextAlign.center,
       parts: parts,
     );
