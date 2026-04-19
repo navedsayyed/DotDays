@@ -25,14 +25,12 @@
 ## 📸 Screenshots
 
 <p align="center">
-  <img src="" width="250" alt="Screenshot 1"/>
+  <img src="screenshots/ss1.png" width="250" alt="Screenshot 1"/>
   &nbsp;&nbsp;&nbsp;
-  <img src="" width="250" alt="Screenshot 2"/>
+  <img src="screenshots/ss2.png" width="250" alt="Screenshot 2"/>
   &nbsp;&nbsp;&nbsp;
-  <img src="" width="250" alt="Screenshot 3"/>
+  <img src="screenshots/ss3.png" width="250" alt="Screenshot 3"/>
 </p>
-
-> 💡 **Add your screenshots:** Place your screenshot files in the repo (e.g., `screenshots/ss1.png`, `screenshots/ss2.png`, `screenshots/ss3.png`) and update the `src` paths above.
 
 ---
 
