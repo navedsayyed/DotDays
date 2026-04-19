@@ -85,4 +85,9 @@ class StorageService {
   static String? getString(String key) => _prefs.getString(key);
   static Future<void> setString(String key, String val) =>
       _prefs.setString(key, val);
+
+  // Generic bool get/set (for flags like needs_reschedule)
+  static bool? getBool(String key) => _prefs.getBool(key);
+  static Future<void> setBool(String key, bool val) =>
+      _prefs.setBool(key, val);
 }

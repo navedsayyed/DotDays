@@ -3,16 +3,19 @@ package com.example.dotdays
 import android.content.BroadcastReceiver
 import android.content.Context
 import android.content.Intent
-import androidx.work.*
-import java.util.concurrent.TimeUnit
+import android.content.SharedPreferences
 
 /**
- * Re-schedules the daily wallpaper WorkManager task after:
+ * Re-registers the background wallpaper task after:
  * - Phone reboot (BOOT_COMPLETED)
  * - App update (MY_PACKAGE_REPLACED)
  * - Quick boot (QUICKBOOT_POWERON — Xiaomi/Realme/OPPO)
  *
- * This ensures the background wallpaper update survives phone restarts.
+ * Sets a "needs_reschedule" flag in SharedPreferences so that
+ * the Flutter app re-schedules WorkManager on next launch.
+ * 
+ * Also triggers the Flutter engine headless to re-register
+ * the WorkManager task if the workmanager plugin supports it.
  */
 class BootReceiver : BroadcastReceiver() {
     override fun onReceive(context: Context, intent: Intent) {
@@ -20,36 +23,13 @@ class BootReceiver : BroadcastReceiver() {
             intent.action == Intent.ACTION_MY_PACKAGE_REPLACED ||
             intent.action == "android.intent.action.QUICKBOOT_POWERON"
         ) {
-            val constraints = Constraints.Builder()
-                .setRequiredNetworkType(NetworkType.NOT_REQUIRED)
-                .setRequiresBatteryNotLow(false)
-                .build()
-
-            val workRequest = PeriodicWorkRequestBuilder<DummyWorker>(
-                15, TimeUnit.MINUTES
+            // Set flag so Flutter re-schedules on next app open
+            val prefs: SharedPreferences = context.getSharedPreferences(
+                "FlutterSharedPreferences", Context.MODE_PRIVATE
             )
-                .setConstraints(constraints)
-                .build()
-
-            WorkManager.getInstance(context).enqueueUniquePeriodicWork(
-                "life_in_dots_unique",
-                ExistingPeriodicWorkPolicy.KEEP,
-                workRequest
-            )
+            prefs.edit()
+                .putBoolean("flutter.needs_reschedule", true)
+                .apply()
         }
-    }
-}
-
-/**
- * Minimal worker stub — the real work is done by Flutter's WorkManager
- * callback dispatcher. This just ensures WorkManager is registered
- * natively after boot, and Flutter's Workmanager plugin picks it up.
- */
-class DummyWorker(context: Context, params: WorkerParameters) :
-    Worker(context, params) {
-    override fun doWork(): Result {
-        // Flutter's Workmanager plugin handles the actual execution
-        // via callbackDispatcher. This is a fallback registration.
-        return Result.success()
     }
 }

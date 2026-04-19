@@ -108,12 +108,20 @@ class BackgroundService {
   }
 
   /// Re-schedule the task — useful on app launch to ensure it's still alive.
-  /// Uses KEEP policy so it doesn't interfere if already scheduled.
+  /// Also handles the "needs_reschedule" flag set by BootReceiver after reboot.
   static Future<void> ensureScheduled() async {
     if (!Platform.isAndroid) return;
     final autoUpdate = StorageService.getAutoUpdate();
     final onboardingDone = StorageService.getOnboardingComplete();
     if (autoUpdate && onboardingDone) {
+      // Check if BootReceiver flagged a reschedule (after reboot/update)
+      final needsReschedule = StorageService.getBool('needs_reschedule') ?? false;
+      if (needsReschedule) {
+        // Force re-register after reboot
+        await Workmanager().cancelByUniqueName(AppConstants.workerUniqueName);
+        await StorageService.setBool('needs_reschedule', false);
+        debugPrint('BackgroundService: re-scheduling after reboot');
+      }
       await scheduleDaily();
     }
   }
