@@ -6,6 +6,9 @@ on:
       - main
   workflow_dispatch:
 
+permissions:
+  contents: write
+
 jobs:
   build:
     name: Build APK
@@ -48,7 +51,6 @@ jobs:
             build/app/outputs/flutter-apk/DotDays.apk
             build/app/outputs/flutter-apk/app-armeabi-v7a-release.apk
             build/app/outputs/flutter-apk/app-x86_64-release.apk
-            build/app/outputs/flutter-apk/app-x86-release.apk
           retention-days: 30
 
       - name: Get version info
@@ -67,8 +69,6 @@ jobs:
 
       - name: Create Release
         uses: softprops/action-gh-release@v1
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         with:
           tag_name: v${{ steps.version.outputs.app_version }}-${{ steps.version.outputs.date }}
           name: DotDays v${{ steps.version.outputs.app_version }}
@@ -87,9 +87,8 @@ jobs:
             **Older phones:**
             👉 **app-armeabi-v7a-release.apk** — Older 32-bit phones
 
-            **Emulators / Rare devices:**
+            **Emulators:**
             - app-x86_64-release.apk — 64-bit emulators
-            - app-x86-release.apk — 32-bit emulators
 
             💡 **Not sure?** Download **DotDays.apk** first. If it doesn't install, try **armeabi-v7a**.
 
@@ -97,10 +96,9 @@ jobs:
 
             ### ℹ️ How to Install
             1. Download the APK file for your device
-            2. Open it on your Android phone
-            3. Enable "Install from unknown sources" if prompted
-            4. Tap Install
-            5. Done! 🚀
+            2. Enable "Install from unknown sources" if prompted
+            3. Tap Install
+            4. Done! 🚀
 
             ---
 
@@ -115,7 +113,6 @@ jobs:
             build/app/outputs/flutter-apk/DotDays.apk
             build/app/outputs/flutter-apk/app-armeabi-v7a-release.apk
             build/app/outputs/flutter-apk/app-x86_64-release.apk
-            build/app/outputs/flutter-apk/app-x86-release.apk
           draft: false
           prerelease: false
 
@@ -128,7 +125,7 @@ jobs:
           echo "- 📱 [All Releases](https://github.com/${{ github.repository }}/releases)" >> $GITHUB_STEP_SUMMARY
           echo "" >> $GITHUB_STEP_SUMMARY
           echo "**APK Sizes:**" >> $GITHUB_STEP_SUMMARY
-          ls -lh build/app/outputs/flutter-apk/DotDays-*.apk | awk '{print "- " $9 ": " $5}' >> $GITHUB_STEP_SUMMARY
+          ls -lh build/app/outputs/flutter-apk/DotDays.apk build/app/outputs/flutter-apk/app-*-release.apk | awk '{print "- " $9 ": " $5}' >> $GITHUB_STEP_SUMMARY
           echo "" >> $GITHUB_STEP_SUMMARY
           echo "📅 Built: ${{ steps.version.outputs.date }}" >> $GITHUB_STEP_SUMMARY
           echo "🔗 Commit: ${{ steps.version.outputs.sha_short }}" >> $GITHUB_STEP_SUMMARY
