@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
+import '../../shared/models/calendar_type.dart';
 import '../../shared/providers/app_settings_provider.dart';
 import '../../shared/widgets/app_button.dart';
 import '../../core/theme/app_colors.dart';
@@ -48,7 +49,9 @@ class _WallpaperPreviewScreenState
         // Save wallpaper location so background task can re-apply to same screen
         await StorageService.setWallpaperLocation(_selectedLocation);
         if (settings.autoUpdate) await BackgroundService.scheduleDaily();
-        await ref.read(appSettingsProvider.notifier).setOnboardingComplete(true);
+        await ref
+            .read(appSettingsProvider.notifier)
+            .setOnboardingComplete(true);
         success = true;
       } else {
         errorMsg = 'Could not apply wallpaper. Try saving manually.';
@@ -70,10 +73,30 @@ class _WallpaperPreviewScreenState
     ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(
         backgroundColor: AppColors.surface,
-        content: Text(msg,
-            style: const TextStyle(color: AppColors.textPrimary)),
+        content:
+            Text(msg, style: const TextStyle(color: AppColors.textPrimary)),
       ),
     );
+  }
+
+  void _handleBack() {
+    if (context.canPop()) {
+      context.pop();
+      return;
+    }
+
+    final calendarType = ref.read(appSettingsProvider).calendarType;
+    switch (calendarType) {
+      case CalendarType.life:
+        context.go(AppRoutes.lifeStats);
+        break;
+      case CalendarType.year:
+        context.go(AppRoutes.yearPreview);
+        break;
+      case CalendarType.goal:
+        context.go(AppRoutes.goalPreview);
+        break;
+    }
   }
 
   @override
@@ -90,7 +113,7 @@ class _WallpaperPreviewScreenState
             children: [
               const SizedBox(height: 24),
               GestureDetector(
-                onTap: () => context.pop(),
+                onTap: _handleBack,
                 child: const Icon(Icons.arrow_back_ios_new,
                     color: AppColors.textMuted, size: 18),
               ),
@@ -205,13 +228,11 @@ class _ScreenSelector extends StatelessWidget {
             onTap: () => onChanged(opt.$1),
             behavior: HitTestBehavior.opaque,
             child: Container(
-              padding:
-                  const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
+              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
               decoration: BoxDecoration(
                 border: idx < options.length - 1
                     ? const Border(
-                        bottom:
-                            BorderSide(color: AppColors.borderSubtle))
+                        bottom: BorderSide(color: AppColors.borderSubtle))
                     : null,
               ),
               child: Row(
@@ -221,14 +242,11 @@ class _ScreenSelector extends StatelessWidget {
                     width: 10,
                     height: 10,
                     decoration: BoxDecoration(
-                      color: isActive
-                          ? AppColors.accent
-                          : Colors.transparent,
+                      color: isActive ? AppColors.accent : Colors.transparent,
                       shape: BoxShape.circle,
                       border: Border.all(
-                        color: isActive
-                            ? AppColors.accent
-                            : AppColors.textMuted,
+                        color:
+                            isActive ? AppColors.accent : AppColors.textMuted,
                         width: 1.5,
                       ),
                     ),
@@ -248,12 +266,10 @@ class _ScreenSelector extends StatelessWidget {
                   Text(
                     isActive ? 'Selected' : 'Select',
                     style: TextStyle(
-                      color: isActive
-                          ? AppColors.accent
-                          : AppColors.textDisabled,
+                      color:
+                          isActive ? AppColors.accent : AppColors.textDisabled,
                       fontSize: 11,
-                      fontWeight:
-                          isActive ? FontWeight.w600 : FontWeight.w400,
+                      fontWeight: isActive ? FontWeight.w600 : FontWeight.w400,
                     ),
                   ),
                 ],

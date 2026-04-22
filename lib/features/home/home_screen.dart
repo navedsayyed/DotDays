@@ -33,8 +33,16 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
         child: Padding(
           padding: const EdgeInsets.fromLTRB(16, 0, 16, 12),
           child: _BottomNav(
-            current: _tab,
-            onTap: (i) => setState(() => _tab = i),
+            // _tab 0 = Home (nav 0), _tab 1 = Settings (nav 2)
+            current: _tab == 0 ? 0 : 2,
+            onTap: (i) {
+              if (i == 1) {
+                // Go directly to wallpaper preview — no intermediate screen
+                context.go(AppRoutes.wallpaperPreview);
+              } else {
+                setState(() => _tab = i == 2 ? 1 : 0);
+              }
+            },
           ),
         ),
       ),
@@ -45,9 +53,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
           child: _tab == 0
               ? _HomeTab(settings: settings, fmt: fmt,
                   lifeTotal: lifeTotal, yearLeft: yearLeft)
-              : _tab == 1
-                  ? _SetTab(settings: settings)
-                  : _SettingsTabContent(settings: settings),
+              : _SettingsTabContent(settings: settings),
         ),
       ),
     );
