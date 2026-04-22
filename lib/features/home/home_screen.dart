@@ -304,33 +304,244 @@ class _SetTab extends StatelessWidget {
   }
 }
 
-class _SettingsTabContent extends StatelessWidget {
+class _SettingsTabContent extends ConsumerWidget {
   final dynamic settings;
   const _SettingsTabContent({required this.settings});
 
   @override
-  Widget build(BuildContext context) {
-    return Center(
-      child: GestureDetector(
-        onTap: () => context.go(AppRoutes.settings),
-        child: const Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            Icon(Icons.settings_outlined,
-                color: AppColors.accent, size: 48),
-            SizedBox(height: 16),
-            Text('Settings',
+  Widget build(BuildContext context, WidgetRef ref) {
+    final s = ref.watch(appSettingsProvider);
+    final notifier = ref.read(appSettingsProvider.notifier);
+
+    return SingleChildScrollView(
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          const SizedBox(height: 8),
+          const Text(
+            'Settings',
+            style: TextStyle(
+              color: AppColors.textPrimary,
+              fontSize: 22,
+              fontWeight: FontWeight.w700,
+            ),
+          ),
+          const SizedBox(height: 20),
+          // Lifespan
+          _SettingsTile(
+            label: 'Expected lifespan',
+            trailing: GestureDetector(
+              onTap: () => _showLifespanDialog(context, ref, s.lifespan),
+              child: Text(
+                '${s.lifespan} yrs →',
+                style: const TextStyle(
+                  color: AppColors.accent,
+                  fontSize: 13,
+                  fontWeight: FontWeight.w600,
+                ),
+              ),
+            ),
+          ),
+          // Lived dot color
+          _SettingsTile(
+            label: 'Dot color (lived)',
+            trailing: _DotColorRow(
+              selectedColor: s.livedDotColor,
+              onSelect: (c) => notifier.setLivedDotColor(c),
+            ),
+          ),
+          // Today dot
+          _SettingsTile(
+            label: 'Today dot color',
+            trailing: Container(
+              width: 18,
+              height: 18,
+              decoration: const BoxDecoration(
+                color: AppColors.accent,
+                shape: BoxShape.circle,
+              ),
+            ),
+          ),
+          // Auto-update
+          _SettingsTile(
+            label: 'Auto-update wallpaper',
+            trailing: _Toggle(
+              value: s.autoUpdate,
+              onChanged: (v) => notifier.setAutoUpdate(v),
+            ),
+          ),
+          // Lock screen
+          _SettingsTile(
+            label: 'Show on lock screen',
+            trailing: _Toggle(
+              value: s.lockScreen,
+              onChanged: (v) => notifier.setLockScreen(v),
+            ),
+          ),
+          // Day counter
+          _SettingsTile(
+            label: 'Show day counter',
+            trailing: _Toggle(
+              value: s.showDayCounter,
+              onChanged: (v) => notifier.setShowDayCounter(v),
+            ),
+          ),
+          // Date of birth
+          _SettingsTile(
+            label: 'Date of birth',
+            trailing: GestureDetector(
+              onTap: () => context.go(AppRoutes.lifeInput),
+              child: const Text(
+                'Edit →',
                 style: TextStyle(
+                  color: AppColors.accent,
+                  fontSize: 13,
+                  fontWeight: FontWeight.w600,
+                ),
+              ),
+            ),
+            showBorder: false,
+          ),
+        ],
+      ),
+    );
+  }
+
+  void _showLifespanDialog(BuildContext context, WidgetRef ref, int current) {
+    int temp = current;
+    showDialog(
+      context: context,
+      builder: (ctx) => StatefulBuilder(
+        builder: (ctx, setInner) => AlertDialog(
+          backgroundColor: AppColors.surface,
+          title: const Text(
+            'Expected Lifespan',
+            style: TextStyle(color: AppColors.textPrimary, fontSize: 17),
+          ),
+          content: Row(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              IconButton(
+                icon: const Icon(Icons.remove_circle_outline,
+                    color: AppColors.accent),
+                onPressed: () {
+                  if (temp > 50) setInner(() => temp--);
+                },
+              ),
+              Text(
+                '$temp years',
+                style: const TextStyle(
                     color: AppColors.textPrimary,
-                    fontSize: 20,
-                    fontWeight: FontWeight.w700)),
-            SizedBox(height: 8),
-            Text('Tap to open settings',
-                style: TextStyle(
-                    color: AppColors.textMuted, fontSize: 13)),
+                    fontSize: 18,
+                    fontWeight: FontWeight.w600),
+              ),
+              IconButton(
+                icon: const Icon(Icons.add_circle_outline,
+                    color: AppColors.accent),
+                onPressed: () {
+                  if (temp < 120) setInner(() => temp++);
+                },
+              ),
+            ],
+          ),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.pop(ctx),
+              child: const Text('Cancel',
+                  style: TextStyle(color: AppColors.textMuted)),
+            ),
+            TextButton(
+              onPressed: () async {
+                await ref
+                    .read(appSettingsProvider.notifier)
+                    .setLifespan(temp);
+                if (context.mounted) Navigator.pop(ctx);
+              },
+              child: const Text('Save',
+                  style: TextStyle(color: AppColors.accent)),
+            ),
           ],
         ),
       ),
+    );
+  }
+}
+
+class _SettingsTile extends StatelessWidget {
+  final String label;
+  final Widget trailing;
+  final bool showBorder;
+
+  const _SettingsTile({
+    required this.label,
+    required this.trailing,
+    this.showBorder = true,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      padding: const EdgeInsets.symmetric(vertical: 14),
+      decoration: BoxDecoration(
+        border: showBorder
+            ? const Border(bottom: BorderSide(color: AppColors.border, width: 0.5))
+            : null,
+      ),
+      child: Row(
+        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+        children: [
+          Text(
+            label,
+            style: const TextStyle(
+              color: AppColors.textPrimary,
+              fontSize: 14,
+              fontWeight: FontWeight.w500,
+            ),
+          ),
+          trailing,
+        ],
+      ),
+    );
+  }
+}
+
+class _DotColorRow extends StatelessWidget {
+  final Color selectedColor;
+  final ValueChanged<Color> onSelect;
+
+  const _DotColorRow({required this.selectedColor, required this.onSelect});
+
+  static const _colors = [
+    Colors.white,
+    Color(0xFFFF6B35),
+    Color(0xFF4CAF50),
+    Color(0xFF2196F3),
+    Color(0xFFE91E63),
+    Color(0xFFFFEB3B),
+  ];
+
+  @override
+  Widget build(BuildContext context) {
+    return Row(
+      mainAxisSize: MainAxisSize.min,
+      children: _colors.map((c) {
+        final selected = c.value == selectedColor.value;
+        return GestureDetector(
+          onTap: () => onSelect(c),
+          child: Container(
+            width: 20,
+            height: 20,
+            margin: const EdgeInsets.only(left: 6),
+            decoration: BoxDecoration(
+              color: c,
+              shape: BoxShape.circle,
+              border: selected
+                  ? Border.all(color: AppColors.accent, width: 2)
+                  : null,
+            ),
+          ),
+        );
+      }).toList(),
     );
   }
 }
@@ -383,6 +594,43 @@ class _BottomNav extends StatelessWidget {
             ),
           );
         }),
+      ),
+    );
+  }
+}
+
+/// Clean minimal toggle — no ugly OS-default Switch colors.
+class _Toggle extends StatelessWidget {
+  final bool value;
+  final ValueChanged<bool> onChanged;
+
+  const _Toggle({required this.value, required this.onChanged});
+
+  @override
+  Widget build(BuildContext context) {
+    return GestureDetector(
+      onTap: () => onChanged(!value),
+      child: AnimatedContainer(
+        duration: const Duration(milliseconds: 200),
+        width: 44,
+        height: 26,
+        padding: const EdgeInsets.all(3),
+        decoration: BoxDecoration(
+          borderRadius: BorderRadius.circular(13),
+          color: value ? AppColors.accent : const Color(0xFF2A2D35),
+        ),
+        child: AnimatedAlign(
+          duration: const Duration(milliseconds: 200),
+          alignment: value ? Alignment.centerRight : Alignment.centerLeft,
+          child: Container(
+            width: 20,
+            height: 20,
+            decoration: const BoxDecoration(
+              color: Colors.white,
+              shape: BoxShape.circle,
+            ),
+          ),
+        ),
       ),
     );
   }
