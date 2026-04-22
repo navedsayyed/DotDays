@@ -37,8 +37,8 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
             current: _tab == 0 ? 0 : 2,
             onTap: (i) {
               if (i == 1) {
-                // Go directly to wallpaper preview — no intermediate screen
-                context.go(AppRoutes.wallpaperPreview);
+                // Open choose calendar type screen
+                context.go(AppRoutes.changeType);
               } else {
                 setState(() => _tab = i == 2 ? 1 : 0);
               }

@@ -8,14 +8,21 @@ import '../../core/theme/app_colors.dart';
 import '../../routes/app_router.dart';
 
 class ChooseTypeScreen extends ConsumerStatefulWidget {
-  const ChooseTypeScreen({super.key});
+  final bool fromHome;
+  const ChooseTypeScreen({super.key, this.fromHome = false});
 
   @override
   ConsumerState<ChooseTypeScreen> createState() => _ChooseTypeScreenState();
 }
 
 class _ChooseTypeScreenState extends ConsumerState<ChooseTypeScreen> {
-  CalendarType _selected = CalendarType.life;
+  late CalendarType _selected;
+
+  @override
+  void initState() {
+    super.initState();
+    _selected = ref.read(appSettingsProvider).calendarType;
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -31,7 +38,9 @@ class _ChooseTypeScreenState extends ConsumerState<ChooseTypeScreen> {
               Align(
                 alignment: Alignment.centerLeft,
                 child: GestureDetector(
-                  onTap: () => context.go(AppRoutes.welcome),
+                  onTap: () => context.go(
+                    widget.fromHome ? AppRoutes.home : AppRoutes.welcome,
+                  ),
                   child: const Icon(Icons.arrow_back_ios_new,
                       color: AppColors.textMuted, size: 18),
                 ),
@@ -73,19 +82,24 @@ class _ChooseTypeScreenState extends ConsumerState<ChooseTypeScreen> {
               ),
               const Spacer(),
               PrimaryButton(
-                label: 'Continue →',
+                label: widget.fromHome ? 'Apply →' : 'Continue →',
                 onPressed: () async {
                   await ref
                       .read(appSettingsProvider.notifier)
                       .setCalendarType(_selected);
                   if (!context.mounted) return;
-                  switch (_selected) {
-                    case CalendarType.life:
-                      context.go(AppRoutes.lifeInput);
-                    case CalendarType.year:
-                      context.go(AppRoutes.yearPreview);
-                    case CalendarType.goal:
-                      context.go(AppRoutes.goalInput);
+                  if (widget.fromHome) {
+                    // Go to wallpaper preview to set the new wallpaper type
+                    context.go(AppRoutes.wallpaperPreview);
+                  } else {
+                    switch (_selected) {
+                      case CalendarType.life:
+                        context.go(AppRoutes.lifeInput);
+                      case CalendarType.year:
+                        context.go(AppRoutes.yearPreview);
+                      case CalendarType.goal:
+                        context.go(AppRoutes.goalInput);
+                    }
                   }
                 },
               ),

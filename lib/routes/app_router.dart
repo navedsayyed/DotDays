@@ -27,6 +27,7 @@ class AppRoutes {
   static const String success = '/success';
   static const String home = '/home';
   static const String settings = '/settings';
+  static const String changeType = '/change-type';
 }
 
 // Stable router — created once, never re-created.
@@ -91,6 +92,10 @@ final routerProvider = Provider<GoRouter>((ref) {
       GoRoute(
         path: AppRoutes.settings,
         builder: (context, state) => const SettingsScreen(),
+      ),
+      GoRoute(
+        path: AppRoutes.changeType,
+        builder: (context, state) => const ChooseTypeScreen(fromHome: true),
       ),
     ],
   );
