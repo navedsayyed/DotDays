@@ -51,8 +51,11 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
         child: Padding(
           padding: const EdgeInsets.fromLTRB(20, 16, 20, 0),
           child: _tab == 0
-              ? _HomeTab(settings: settings, fmt: fmt,
-                  lifeTotal: lifeTotal, yearLeft: yearLeft)
+              ? _HomeTab(
+                  settings: settings,
+                  fmt: fmt,
+                  lifeTotal: lifeTotal,
+                  yearLeft: yearLeft)
               : _SettingsTabContent(settings: settings),
         ),
       ),
@@ -67,8 +70,10 @@ class _HomeTab extends StatelessWidget {
   final int yearLeft;
 
   const _HomeTab({
-    required this.settings, required this.fmt,
-    required this.lifeTotal, required this.yearLeft,
+    required this.settings,
+    required this.fmt,
+    required this.lifeTotal,
+    required this.yearLeft,
   });
 
   @override
@@ -124,11 +129,11 @@ class _HomeTab extends StatelessWidget {
                 const SizedBox(height: 16),
                 Row(
                   children: [
-                    _MetricCard(label: 'Life mode',
+                    _MetricCard(
+                        label: 'Life mode',
                         value: '${fmt.format(lifeTotal)} dots'),
                     const SizedBox(width: 10),
-                    const _MetricCard(label: 'Year mode',
-                        value: '365 dots'),
+                    const _MetricCard(label: 'Year mode', value: '365 dots'),
                   ],
                 ),
               ],
@@ -191,8 +196,7 @@ class _MetricCard extends StatelessWidget {
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             Text(label,
-                style: const TextStyle(
-                    color: AppColors.textDim, fontSize: 10)),
+                style: const TextStyle(color: AppColors.textDim, fontSize: 10)),
             const SizedBox(height: 3),
             Text(value,
                 style: const TextStyle(
@@ -213,8 +217,10 @@ class _QuickAction extends StatelessWidget {
   final VoidCallback onTap;
 
   const _QuickAction({
-    required this.icon, required this.title,
-    required this.subtitle, required this.onTap,
+    required this.icon,
+    required this.title,
+    required this.subtitle,
+    required this.onTap,
   });
 
   @override
@@ -458,13 +464,11 @@ class _SettingsTabContent extends ConsumerWidget {
             ),
             TextButton(
               onPressed: () async {
-                await ref
-                    .read(appSettingsProvider.notifier)
-                    .setLifespan(temp);
+                await ref.read(appSettingsProvider.notifier).setLifespan(temp);
                 if (context.mounted) Navigator.pop(ctx);
               },
-              child: const Text('Save',
-                  style: TextStyle(color: AppColors.accent)),
+              child:
+                  const Text('Save', style: TextStyle(color: AppColors.accent)),
             ),
           ],
         ),
@@ -490,7 +494,8 @@ class _SettingsTile extends StatelessWidget {
       padding: const EdgeInsets.symmetric(vertical: 14),
       decoration: BoxDecoration(
         border: showBorder
-            ? const Border(bottom: BorderSide(color: AppColors.border, width: 0.5))
+            ? const Border(
+                bottom: BorderSide(color: AppColors.border, width: 0.5))
             : null,
       ),
       child: Row(
@@ -558,44 +563,59 @@ class _BottomNav extends StatelessWidget {
 
   const _BottomNav({required this.current, required this.onTap});
 
+  static const _items = [
+    (icon: Icons.home_rounded, label: 'Home'),
+    (icon: Icons.grid_view_rounded, label: 'Set'),
+    (icon: Icons.settings_rounded, label: 'Settings'),
+  ];
+
   @override
   Widget build(BuildContext context) {
-    final tabs = ['Home', 'Set', 'Settings'];
     return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 6),
+      padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 6),
       decoration: BoxDecoration(
-        color: const Color(0xFF0F1115),
-        border: Border.all(color: AppColors.borderSubtle),
-        borderRadius: BorderRadius.circular(16),
+        color: const Color(0xFF101216),
+        borderRadius: BorderRadius.circular(28),
       ),
       child: Row(
-        children: List.generate(tabs.length, (i) {
+        mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+        children: List.generate(_items.length, (i) {
           final active = i == current;
-          return Expanded(
-            child: GestureDetector(
-              onTap: () => onTap(i),
-              child: AnimatedContainer(
-                duration: const Duration(milliseconds: 200),
-                padding: const EdgeInsets.symmetric(vertical: 8),
-                decoration: BoxDecoration(
-                  color: active
-                      ? const Color(0xFF1A1F27)
-                      : Colors.transparent,
-                  borderRadius: BorderRadius.circular(10),
-                ),
-                child: Text(
-                  tabs[i],
-                  textAlign: TextAlign.center,
-                  style: TextStyle(
-                    color: active
-                        ? AppColors.textPrimary
-                        : AppColors.textDim,
-                    fontSize: 12,
-                    fontWeight: active
-                        ? FontWeight.w600
-                        : FontWeight.w400,
+          final item = _items[i];
+          return GestureDetector(
+            onTap: () => onTap(i),
+            behavior: HitTestBehavior.opaque,
+            child: AnimatedContainer(
+              duration: const Duration(milliseconds: 300),
+              curve: Curves.easeOutCubic,
+              padding: EdgeInsets.symmetric(
+                horizontal: active ? 18 : 16,
+                vertical: 10,
+              ),
+              decoration: BoxDecoration(
+                color: active ? const Color(0xFF1E2228) : Colors.transparent,
+                borderRadius: BorderRadius.circular(22),
+              ),
+              child: Row(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  Icon(
+                    item.icon,
+                    size: 20,
+                    color: active ? Colors.white : const Color(0xFF5A5E66),
                   ),
-                ),
+                  if (active) ...[
+                    const SizedBox(width: 8),
+                    Text(
+                      item.label,
+                      style: const TextStyle(
+                        color: Colors.white,
+                        fontSize: 13,
+                        fontWeight: FontWeight.w600,
+                      ),
+                    ),
+                  ],
+                ],
               ),
             ),
           );
