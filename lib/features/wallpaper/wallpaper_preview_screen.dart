@@ -13,7 +13,8 @@ import '../../routes/app_router.dart';
 import '../wallpaper/wallpaper_canvas.dart';
 
 class WallpaperPreviewScreen extends ConsumerStatefulWidget {
-  const WallpaperPreviewScreen({super.key});
+  final String? from;
+  const WallpaperPreviewScreen({super.key, this.from});
 
   @override
   ConsumerState<WallpaperPreviewScreen> createState() =>
@@ -83,18 +84,14 @@ class _WallpaperPreviewScreenState
   }
 
   void _handleBack() {
-    // Returning user → go home. First-time onboarding → follow type flow.
+    // If 'from' route was passed, go back there
+    if (widget.from != null && widget.from!.isNotEmpty) {
+      context.go(widget.from!);
+      return;
+    }
+
+    // Fallback: determine by calendar type
     final settings = ref.read(appSettingsProvider);
-    if (settings.onboardingComplete) {
-      context.go(AppRoutes.home);
-      return;
-    }
-
-    if (context.canPop()) {
-      context.pop();
-      return;
-    }
-
     switch (settings.calendarType) {
       case CalendarType.life:
         context.go(AppRoutes.lifeStats);

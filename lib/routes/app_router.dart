@@ -79,7 +79,9 @@ final routerProvider = Provider<GoRouter>((ref) {
       ),
       GoRoute(
         path: AppRoutes.wallpaperPreview,
-        builder: (context, state) => const WallpaperPreviewScreen(),
+        builder: (context, state) => WallpaperPreviewScreen(
+          from: state.uri.queryParameters['from'],
+        ),
       ),
       GoRoute(
         path: AppRoutes.success,

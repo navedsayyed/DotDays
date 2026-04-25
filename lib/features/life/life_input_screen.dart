@@ -80,11 +80,13 @@ class _LifeInputScreenState extends ConsumerState<LifeInputScreen> {
             children: [
               const SizedBox(height: 24),
               GestureDetector(
-                onTap: () => context.go(
-                  ref.read(appSettingsProvider).onboardingComplete
-                      ? AppRoutes.home
-                      : AppRoutes.chooseType,
-                ),
+                onTap: () {
+                  if (context.canPop()) {
+                    context.pop();
+                  } else {
+                    context.go(AppRoutes.home);
+                  }
+                },
                 child: const Icon(Icons.arrow_back_ios_new,
                     color: AppColors.textMuted, size: 18),
               ),

@@ -42,11 +42,13 @@ class GoalPreviewScreen extends ConsumerWidget {
             children: [
               const SizedBox(height: 24),
               GestureDetector(
-                onTap: () => context.go(
-                  ref.read(appSettingsProvider).onboardingComplete
-                      ? AppRoutes.home
-                      : AppRoutes.goalInput,
-                ),
+                onTap: () {
+                  if (context.canPop()) {
+                    context.pop();
+                  } else {
+                    context.go(AppRoutes.home);
+                  }
+                },
                 child: const Icon(Icons.arrow_back_ios_new,
                     color: AppColors.textMuted, size: 18),
               ),
@@ -104,7 +106,7 @@ class GoalPreviewScreen extends ConsumerWidget {
                       .read(appSettingsProvider.notifier)
                       .setCalendarType(CalendarType.goal);
                   if (!context.mounted) return;
-                  context.go(AppRoutes.wallpaperPreview);
+                  context.go('${AppRoutes.wallpaperPreview}?from=${AppRoutes.goalPreview}');
                 },
               ),
               const SizedBox(height: 32),
