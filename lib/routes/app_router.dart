@@ -59,23 +59,33 @@ final routerProvider = Provider<GoRouter>((ref) {
       ),
       GoRoute(
         path: AppRoutes.lifeInput,
-        builder: (context, state) => const LifeInputScreen(),
+        builder: (context, state) => LifeInputScreen(
+          from: state.uri.queryParameters['from'],
+        ),
       ),
       GoRoute(
         path: AppRoutes.lifeStats,
-        builder: (context, state) => const LifeStatsScreen(),
+        builder: (context, state) => LifeStatsScreen(
+          from: state.uri.queryParameters['from'],
+        ),
       ),
       GoRoute(
         path: AppRoutes.yearPreview,
-        builder: (context, state) => const YearPreviewScreen(),
+        builder: (context, state) => YearPreviewScreen(
+          from: state.uri.queryParameters['from'],
+        ),
       ),
       GoRoute(
         path: AppRoutes.goalInput,
-        builder: (context, state) => const GoalInputScreen(),
+        builder: (context, state) => GoalInputScreen(
+          from: state.uri.queryParameters['from'],
+        ),
       ),
       GoRoute(
         path: AppRoutes.goalPreview,
-        builder: (context, state) => const GoalPreviewScreen(),
+        builder: (context, state) => GoalPreviewScreen(
+          from: state.uri.queryParameters['from'],
+        ),
       ),
       GoRoute(
         path: AppRoutes.wallpaperPreview,
@@ -89,7 +99,11 @@ final routerProvider = Provider<GoRouter>((ref) {
       ),
       GoRoute(
         path: AppRoutes.home,
-        builder: (context, state) => const HomeScreen(),
+        builder: (context, state) {
+          final tabStr = state.uri.queryParameters['tab'];
+          final tab = tabStr != null ? int.tryParse(tabStr) ?? 0 : 0;
+          return HomeScreen(initialTab: tab);
+        },
       ),
       GoRoute(
         path: AppRoutes.settings,
@@ -97,7 +111,10 @@ final routerProvider = Provider<GoRouter>((ref) {
       ),
       GoRoute(
         path: AppRoutes.changeType,
-        builder: (context, state) => const ChooseTypeScreen(fromHome: true),
+        builder: (context, state) => ChooseTypeScreen(
+          fromHome: true,
+          from: state.uri.queryParameters['from'],
+        ),
       ),
     ],
   );

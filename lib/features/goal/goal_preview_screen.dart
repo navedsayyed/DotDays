@@ -11,7 +11,8 @@ import '../../services/date_service.dart';
 import '../../routes/app_router.dart';
 
 class GoalPreviewScreen extends ConsumerWidget {
-  const GoalPreviewScreen({super.key});
+  final String? from;
+  const GoalPreviewScreen({super.key, this.from});
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
@@ -43,8 +44,8 @@ class GoalPreviewScreen extends ConsumerWidget {
               const SizedBox(height: 24),
               GestureDetector(
                 onTap: () {
-                  if (context.canPop()) {
-                    context.pop();
+                  if (from != null && from!.isNotEmpty) {
+                    context.go(from!);
                   } else {
                     context.go(AppRoutes.home);
                   }
@@ -106,7 +107,10 @@ class GoalPreviewScreen extends ConsumerWidget {
                       .read(appSettingsProvider.notifier)
                       .setCalendarType(CalendarType.goal);
                   if (!context.mounted) return;
-                  context.go('${AppRoutes.wallpaperPreview}?from=${AppRoutes.goalPreview}');
+                  final currentUrl = from != null
+                      ? '${AppRoutes.goalPreview}?from=${Uri.encodeComponent(from!)}'
+                      : AppRoutes.goalPreview;
+                  context.go('${AppRoutes.wallpaperPreview}?from=${Uri.encodeComponent(currentUrl)}');
                 },
               ),
               const SizedBox(height: 32),

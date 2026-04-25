@@ -9,7 +9,8 @@ import '../../routes/app_router.dart';
 
 class ChooseTypeScreen extends ConsumerStatefulWidget {
   final bool fromHome;
-  const ChooseTypeScreen({super.key, this.fromHome = false});
+  final String? from;
+  const ChooseTypeScreen({super.key, this.fromHome = false, this.from});
 
   @override
   ConsumerState<ChooseTypeScreen> createState() => _ChooseTypeScreenState();
@@ -38,9 +39,15 @@ class _ChooseTypeScreenState extends ConsumerState<ChooseTypeScreen> {
               Align(
                 alignment: Alignment.centerLeft,
                 child: GestureDetector(
-                  onTap: () => context.go(
-                    widget.fromHome ? AppRoutes.home : AppRoutes.welcome,
-                  ),
+                  onTap: () {
+                    if (widget.from != null && widget.from!.isNotEmpty) {
+                      context.go(widget.from!);
+                    } else if (widget.fromHome) {
+                      context.go(AppRoutes.home);
+                    } else {
+                      context.go(AppRoutes.welcome);
+                    }
+                  },
                   child: const Icon(Icons.arrow_back_ios_new,
                       color: AppColors.textMuted, size: 18),
                 ),
@@ -88,28 +95,41 @@ class _ChooseTypeScreenState extends ConsumerState<ChooseTypeScreen> {
                       .read(appSettingsProvider.notifier)
                       .setCalendarType(_selected);
                   if (!context.mounted) return;
-                  // Always follow the same flow — input screens first
+                  // Build the back-link for child screens:
+                  // When fromHome, back should return to changeType (which returns to Set tab)
+                  final String backRoute;
+                  if (widget.fromHome) {
+                    // Encode the full changeType URL with its own from param
+                    final changeTypeUrl = widget.from != null
+                        ? '${AppRoutes.changeType}?from=${Uri.encodeComponent(widget.from!)}'
+                        : AppRoutes.changeType;
+                    backRoute = changeTypeUrl;
+                  } else {
+                    backRoute = AppRoutes.chooseType;
+                  }
+                  final fromParam = Uri.encodeComponent(backRoute);
+
                   switch (_selected) {
                     case CalendarType.life:
                       // Skip DOB input if already saved
                       final settings = ref.read(appSettingsProvider);
                       if (settings.onboardingComplete &&
                           settings.dateOfBirth != null) {
-                        context.go(AppRoutes.lifeStats);
+                        context.go('${AppRoutes.lifeStats}?from=$fromParam');
                       } else {
-                        context.go(AppRoutes.lifeInput);
+                        context.go('${AppRoutes.lifeInput}?from=$fromParam');
                       }
                     case CalendarType.year:
-                      context.go(AppRoutes.yearPreview);
+                      context.go('${AppRoutes.yearPreview}?from=$fromParam');
                     case CalendarType.goal:
                       // Skip goal input if already saved
                       final goalSettings = ref.read(appSettingsProvider);
                       if (goalSettings.onboardingComplete &&
                           goalSettings.goalStart != null &&
                           goalSettings.goalEnd != null) {
-                        context.go(AppRoutes.goalPreview);
+                        context.go('${AppRoutes.goalPreview}?from=$fromParam');
                       } else {
-                        context.go(AppRoutes.goalInput);
+                        context.go('${AppRoutes.goalInput}?from=$fromParam');
                       }
                   }
                 },

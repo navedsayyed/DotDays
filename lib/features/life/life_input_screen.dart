@@ -10,7 +10,8 @@ import '../../services/date_service.dart';
 import '../../routes/app_router.dart';
 
 class LifeInputScreen extends ConsumerStatefulWidget {
-  const LifeInputScreen({super.key});
+  final String? from;
+  const LifeInputScreen({super.key, this.from});
 
   @override
   ConsumerState<LifeInputScreen> createState() => _LifeInputScreenState();
@@ -81,8 +82,8 @@ class _LifeInputScreenState extends ConsumerState<LifeInputScreen> {
               const SizedBox(height: 24),
               GestureDetector(
                 onTap: () {
-                  if (context.canPop()) {
-                    context.pop();
+                  if (widget.from != null && widget.from!.isNotEmpty) {
+                    context.go(widget.from!);
                   } else {
                     context.go(AppRoutes.home);
                   }

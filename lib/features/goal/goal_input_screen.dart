@@ -10,7 +10,8 @@ import '../../services/date_service.dart';
 import '../../routes/app_router.dart';
 
 class GoalInputScreen extends ConsumerStatefulWidget {
-  const GoalInputScreen({super.key});
+  final String? from;
+  const GoalInputScreen({super.key, this.from});
 
   @override
   ConsumerState<GoalInputScreen> createState() => _GoalInputScreenState();
@@ -99,11 +100,13 @@ class _GoalInputScreenState extends ConsumerState<GoalInputScreen> {
             children: [
               const SizedBox(height: 24),
               GestureDetector(
-                onTap: () => context.go(
-                  ref.read(appSettingsProvider).onboardingComplete
-                      ? AppRoutes.home
-                      : AppRoutes.chooseType,
-                ),
+                onTap: () {
+                  if (widget.from != null && widget.from!.isNotEmpty) {
+                    context.go(widget.from!);
+                  } else {
+                    context.go(AppRoutes.home);
+                  }
+                },
                 child: const Icon(Icons.arrow_back_ios_new,
                     color: AppColors.textMuted, size: 18),
               ),

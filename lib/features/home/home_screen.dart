@@ -15,14 +15,21 @@ import '../../shared/widgets/app_button.dart';
 import '../wallpaper/wallpaper_canvas.dart';
 
 class HomeScreen extends ConsumerStatefulWidget {
-  const HomeScreen({super.key});
+  final int initialTab;
+  const HomeScreen({super.key, this.initialTab = 0});
 
   @override
   ConsumerState<HomeScreen> createState() => _HomeScreenState();
 }
 
 class _HomeScreenState extends ConsumerState<HomeScreen> {
-  int _tab = 0; // 0 = Home, 1 = Set, 2 = Settings
+  late int _tab; // 0 = Home, 1 = Set, 2 = Settings
+
+  @override
+  void initState() {
+    super.initState();
+    _tab = widget.initialTab;
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -366,7 +373,7 @@ class _SetTabState extends ConsumerState<_SetTab> {
             ),
             // Edit type button
             GestureDetector(
-              onTap: () => context.go(AppRoutes.changeType),
+              onTap: () => context.go('${AppRoutes.changeType}?from=${Uri.encodeComponent('${AppRoutes.home}?tab=1')}'),
               child: Container(
                 padding:
                     const EdgeInsets.symmetric(horizontal: 12, vertical: 6),

@@ -12,7 +12,8 @@ import '../../services/date_service.dart';
 import '../../routes/app_router.dart';
 
 class LifeStatsScreen extends ConsumerWidget {
-  const LifeStatsScreen({super.key});
+  final String? from;
+  const LifeStatsScreen({super.key, this.from});
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
@@ -41,8 +42,8 @@ class LifeStatsScreen extends ConsumerWidget {
               const SizedBox(height: 24),
               GestureDetector(
                 onTap: () {
-                  if (context.canPop()) {
-                    context.pop();
+                  if (from != null && from!.isNotEmpty) {
+                    context.go(from!);
                   } else {
                     context.go(AppRoutes.home);
                   }
@@ -102,7 +103,11 @@ class LifeStatsScreen extends ConsumerWidget {
                       .read(appSettingsProvider.notifier)
                       .setCalendarType(CalendarType.life);
                   if (!context.mounted) return;
-                  context.go('${AppRoutes.wallpaperPreview}?from=${AppRoutes.lifeStats}');
+                  // Preserve the from chain so back navigation works through the full flow
+                  final currentUrl = from != null
+                      ? '${AppRoutes.lifeStats}?from=${Uri.encodeComponent(from!)}'
+                      : AppRoutes.lifeStats;
+                  context.go('${AppRoutes.wallpaperPreview}?from=${Uri.encodeComponent(currentUrl)}');
                 },
               ),
               const SizedBox(height: 12),

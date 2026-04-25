@@ -12,7 +12,8 @@ import '../../services/date_service.dart';
 import '../../routes/app_router.dart';
 
 class YearPreviewScreen extends ConsumerWidget {
-  const YearPreviewScreen({super.key});
+  final String? from;
+  const YearPreviewScreen({super.key, this.from});
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
@@ -31,8 +32,8 @@ class YearPreviewScreen extends ConsumerWidget {
               const SizedBox(height: 24),
               GestureDetector(
                 onTap: () {
-                  if (context.canPop()) {
-                    context.pop();
+                  if (from != null && from!.isNotEmpty) {
+                    context.go(from!);
                   } else {
                     context.go(AppRoutes.home);
                   }
@@ -96,7 +97,10 @@ class YearPreviewScreen extends ConsumerWidget {
                       .read(appSettingsProvider.notifier)
                       .setCalendarType(CalendarType.year);
                   if (!context.mounted) return;
-                  context.go('${AppRoutes.wallpaperPreview}?from=${AppRoutes.yearPreview}');
+                  final currentUrl = from != null
+                      ? '${AppRoutes.yearPreview}?from=${Uri.encodeComponent(from!)}'
+                      : AppRoutes.yearPreview;
+                  context.go('${AppRoutes.wallpaperPreview}?from=${Uri.encodeComponent(currentUrl)}');
                 },
               ),
               const SizedBox(height: 32),
