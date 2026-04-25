@@ -58,7 +58,9 @@ class _GoalInputScreenState extends ConsumerState<GoalInputScreen> {
             onPrimary: AppColors.textPrimary,
             surface: AppColors.surface,
             onSurface: AppColors.textPrimary,
-          ), dialogTheme: const DialogThemeData(backgroundColor: AppColors.surface),
+          ),
+          dialogTheme:
+              const DialogThemeData(backgroundColor: AppColors.surface),
         ),
         child: child!,
       ),
@@ -129,7 +131,11 @@ class _GoalInputScreenState extends ConsumerState<GoalInputScreen> {
                   controller: _nameController,
                   style: const TextStyle(
                       color: AppColors.textPrimary, fontSize: 16),
-                  decoration: const InputDecoration.collapsed(
+                  decoration: const InputDecoration(
+                    isCollapsed: true,
+                    border: InputBorder.none,
+                    enabledBorder: InputBorder.none,
+                    focusedBorder: InputBorder.none,
                     hintText: 'e.g. Marathon prep',
                     hintStyle:
                         TextStyle(color: AppColors.textDisabled, fontSize: 15),
@@ -182,8 +188,8 @@ class _GoalInputScreenState extends ConsumerState<GoalInputScreen> {
               if (_duration > 0) ...[
                 const SizedBox(height: 6),
                 const Text('Duration',
-                    style: TextStyle(
-                        color: AppColors.textDisabled, fontSize: 11)),
+                    style:
+                        TextStyle(color: AppColors.textDisabled, fontSize: 11)),
                 const SizedBox(height: 4),
                 Text(
                   '$_duration days',
@@ -200,9 +206,7 @@ class _GoalInputScreenState extends ConsumerState<GoalInputScreen> {
                 onPressed: !_isValid
                     ? null
                     : () async {
-                        await ref
-                            .read(appSettingsProvider.notifier)
-                            .setGoal(
+                        await ref.read(appSettingsProvider.notifier).setGoal(
                               name: _nameController.text.trim(),
                               start: _startDate!,
                               end: _endDate!,
