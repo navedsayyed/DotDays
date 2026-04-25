@@ -82,24 +82,35 @@ class _ChooseTypeScreenState extends ConsumerState<ChooseTypeScreen> {
               ),
               const Spacer(),
               PrimaryButton(
-                label: widget.fromHome ? 'Apply →' : 'Continue →',
+                label: 'Continue →',
                 onPressed: () async {
                   await ref
                       .read(appSettingsProvider.notifier)
                       .setCalendarType(_selected);
                   if (!context.mounted) return;
-                  if (widget.fromHome) {
-                    // Go to wallpaper preview to set the new wallpaper type
-                    context.go(AppRoutes.wallpaperPreview);
-                  } else {
-                    switch (_selected) {
-                      case CalendarType.life:
+                  // Always follow the same flow — input screens first
+                  switch (_selected) {
+                    case CalendarType.life:
+                      // Skip DOB input if already saved
+                      final settings = ref.read(appSettingsProvider);
+                      if (settings.onboardingComplete &&
+                          settings.dateOfBirth != null) {
+                        context.go(AppRoutes.lifeStats);
+                      } else {
                         context.go(AppRoutes.lifeInput);
-                      case CalendarType.year:
-                        context.go(AppRoutes.yearPreview);
-                      case CalendarType.goal:
+                      }
+                    case CalendarType.year:
+                      context.go(AppRoutes.yearPreview);
+                    case CalendarType.goal:
+                      // Skip goal input if already saved
+                      final goalSettings = ref.read(appSettingsProvider);
+                      if (goalSettings.onboardingComplete &&
+                          goalSettings.goalStart != null &&
+                          goalSettings.goalEnd != null) {
+                        context.go(AppRoutes.goalPreview);
+                      } else {
                         context.go(AppRoutes.goalInput);
-                    }
+                      }
                   }
                 },
               ),

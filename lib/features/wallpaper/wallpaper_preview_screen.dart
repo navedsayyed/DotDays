@@ -28,6 +28,8 @@ class _WallpaperPreviewScreenState
 
   Future<void> _apply() async {
     setState(() => _applying = true);
+    // Capture BEFORE modifying — determines where to go after apply
+    final wasAlreadySetup = ref.read(appSettingsProvider).onboardingComplete;
     bool success = false;
     String? errorMsg;
     try {
@@ -63,7 +65,8 @@ class _WallpaperPreviewScreenState
     }
     if (!mounted) return;
     if (success) {
-      context.go(AppRoutes.success);
+      // First time → success screen. Returning user → straight home.
+      context.go(wasAlreadySetup ? AppRoutes.home : AppRoutes.success);
     } else if (errorMsg != null) {
       _showError(errorMsg);
     }
@@ -80,13 +83,19 @@ class _WallpaperPreviewScreenState
   }
 
   void _handleBack() {
+    // Returning user → go home. First-time onboarding → follow type flow.
+    final settings = ref.read(appSettingsProvider);
+    if (settings.onboardingComplete) {
+      context.go(AppRoutes.home);
+      return;
+    }
+
     if (context.canPop()) {
       context.pop();
       return;
     }
 
-    final calendarType = ref.read(appSettingsProvider).calendarType;
-    switch (calendarType) {
+    switch (settings.calendarType) {
       case CalendarType.life:
         context.go(AppRoutes.lifeStats);
         break;

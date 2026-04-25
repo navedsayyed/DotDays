@@ -27,6 +27,19 @@ class _LifeInputScreenState extends ConsumerState<LifeInputScreen> {
     'Other': 79,
   };
 
+  @override
+  void initState() {
+    super.initState();
+    // Pre-fill with saved settings if available
+    final settings = ref.read(appSettingsProvider);
+    if (settings.dateOfBirth != null) {
+      _dob = settings.dateOfBirth;
+    }
+    if (settings.lifespan > 0) {
+      _lifespan = settings.lifespan;
+    }
+  }
+
   Future<void> _pickDate() async {
     final picked = await showDatePicker(
       context: context,
@@ -67,7 +80,11 @@ class _LifeInputScreenState extends ConsumerState<LifeInputScreen> {
             children: [
               const SizedBox(height: 24),
               GestureDetector(
-                onTap: () => context.go(AppRoutes.chooseType),
+                onTap: () => context.go(
+                  ref.read(appSettingsProvider).onboardingComplete
+                      ? AppRoutes.home
+                      : AppRoutes.chooseType,
+                ),
                 child: const Icon(Icons.arrow_back_ios_new,
                     color: AppColors.textMuted, size: 18),
               ),

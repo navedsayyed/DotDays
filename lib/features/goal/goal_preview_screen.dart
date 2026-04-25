@@ -42,7 +42,11 @@ class GoalPreviewScreen extends ConsumerWidget {
             children: [
               const SizedBox(height: 24),
               GestureDetector(
-                onTap: () => context.go(AppRoutes.goalInput),
+                onTap: () => context.go(
+                  ref.read(appSettingsProvider).onboardingComplete
+                      ? AppRoutes.home
+                      : AppRoutes.goalInput,
+                ),
                 child: const Icon(Icons.arrow_back_ios_new,
                     color: AppColors.textMuted, size: 18),
               ),

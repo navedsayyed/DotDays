@@ -30,7 +30,11 @@ class YearPreviewScreen extends ConsumerWidget {
             children: [
               const SizedBox(height: 24),
               GestureDetector(
-                onTap: () => context.go(AppRoutes.chooseType),
+                onTap: () => context.go(
+                  ref.read(appSettingsProvider).onboardingComplete
+                      ? AppRoutes.home
+                      : AppRoutes.chooseType,
+                ),
                 child: const Icon(Icons.arrow_back_ios_new,
                     color: AppColors.textMuted, size: 18),
               ),

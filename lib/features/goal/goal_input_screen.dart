@@ -22,6 +22,18 @@ class _GoalInputScreenState extends ConsumerState<GoalInputScreen> {
   DateTime? _endDate;
 
   @override
+  void initState() {
+    super.initState();
+    // Pre-fill with saved settings if available
+    final settings = ref.read(appSettingsProvider);
+    if (settings.goalName != null && settings.goalName!.isNotEmpty) {
+      _nameController.text = settings.goalName!;
+    }
+    _startDate = settings.goalStart;
+    _endDate = settings.goalEnd;
+  }
+
+  @override
   void dispose() {
     _nameController.dispose();
     super.dispose();
@@ -85,7 +97,11 @@ class _GoalInputScreenState extends ConsumerState<GoalInputScreen> {
             children: [
               const SizedBox(height: 24),
               GestureDetector(
-                onTap: () => context.go(AppRoutes.chooseType),
+                onTap: () => context.go(
+                  ref.read(appSettingsProvider).onboardingComplete
+                      ? AppRoutes.home
+                      : AppRoutes.chooseType,
+                ),
                 child: const Icon(Icons.arrow_back_ios_new,
                     color: AppColors.textMuted, size: 18),
               ),

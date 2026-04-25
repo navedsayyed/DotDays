@@ -6,7 +6,13 @@ import '../../shared/providers/app_settings_provider.dart';
 
 import '../../core/theme/app_colors.dart';
 import '../../services/date_service.dart';
+import '../../services/wallpaper_service.dart';
+import '../../services/headless_wallpaper_renderer.dart';
+import '../../services/storage_service.dart';
+import '../../services/background_service.dart';
 import '../../routes/app_router.dart';
+import '../../shared/widgets/app_button.dart';
+import '../wallpaper/wallpaper_canvas.dart';
 
 class HomeScreen extends ConsumerStatefulWidget {
   const HomeScreen({super.key});
@@ -16,7 +22,7 @@ class HomeScreen extends ConsumerStatefulWidget {
 }
 
 class _HomeScreenState extends ConsumerState<HomeScreen> {
-  int _tab = 0;
+  int _tab = 0; // 0 = Home, 1 = Set, 2 = Settings
 
   @override
   Widget build(BuildContext context) {
@@ -33,16 +39,8 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
         child: Padding(
           padding: const EdgeInsets.fromLTRB(16, 0, 16, 12),
           child: _BottomNav(
-            // _tab 0 = Home (nav 0), _tab 1 = Settings (nav 2)
-            current: _tab == 0 ? 0 : 2,
-            onTap: (i) {
-              if (i == 1) {
-                // Open choose calendar type screen
-                context.go(AppRoutes.changeType);
-              } else {
-                setState(() => _tab = i == 2 ? 1 : 0);
-              }
-            },
+            current: _tab,
+            onTap: (i) => setState(() => _tab = i),
           ),
         ),
       ),
@@ -56,7 +54,9 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                   fmt: fmt,
                   lifeTotal: lifeTotal,
                   yearLeft: yearLeft)
-              : _SettingsTabContent(settings: settings),
+              : _tab == 1
+                  ? _SetTab(settings: settings)
+                  : _SettingsTabContent(settings: settings),
         ),
       ),
     );
@@ -263,55 +263,256 @@ class _QuickAction extends StatelessWidget {
   }
 }
 
-class _SetTab extends StatelessWidget {
+class _SetTab extends ConsumerStatefulWidget {
   final dynamic settings;
   const _SetTab({required this.settings});
 
   @override
+  ConsumerState<_SetTab> createState() => _SetTabState();
+}
+
+class _SetTabState extends ConsumerState<_SetTab> {
+  int _selectedLocation = WallpaperService.locationBothScreens;
+  bool _applying = false;
+
+  Future<void> _apply() async {
+    setState(() => _applying = true);
+    String? errorMsg;
+    bool success = false;
+    try {
+      final settings = ref.read(appSettingsProvider);
+      final file = await HeadlessWallpaperRenderer.render(
+        calendarType: settings.calendarType,
+        dateOfBirth: settings.dateOfBirth,
+        lifespan: settings.lifespan,
+        goalName: settings.goalName,
+        goalStart: settings.goalStart,
+        goalEnd: settings.goalEnd,
+        livedDotColor: settings.livedDotColor,
+      );
+      if (file == null) throw Exception('Failed to render wallpaper');
+      final ok =
+          await WallpaperService.applyWallpaper(file, _selectedLocation);
+      if (ok) {
+        await StorageService.setWallpaperLocation(_selectedLocation);
+        if (settings.autoUpdate) await BackgroundService.scheduleDaily();
+        success = true;
+      } else {
+        errorMsg = 'Could not apply wallpaper.';
+      }
+    } catch (e) {
+      errorMsg = e.toString();
+    } finally {
+      if (mounted) setState(() => _applying = false);
+    }
+    if (!mounted) return;
+    if (success) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          backgroundColor: const Color(0xFF1A1F27),
+          behavior: SnackBarBehavior.floating,
+          shape:
+              RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+          content: const Row(
+            children: [
+              Icon(Icons.check_circle_rounded,
+                  color: AppColors.accent, size: 18),
+              SizedBox(width: 10),
+              Text('Wallpaper applied!',
+                  style: TextStyle(color: AppColors.textPrimary)),
+            ],
+          ),
+        ),
+      );
+    } else if (errorMsg != null) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          backgroundColor: AppColors.surface,
+          content: Text(errorMsg,
+              style: const TextStyle(color: AppColors.textPrimary)),
+        ),
+      );
+    }
+  }
+
+  @override
   Widget build(BuildContext context) {
-    return Center(
-      child: Column(
-        mainAxisAlignment: MainAxisAlignment.center,
-        children: [
-          const Icon(Icons.wallpaper, color: AppColors.accent, size: 48),
-          const SizedBox(height: 16),
-          const Text(
-            'Set Wallpaper',
-            style: TextStyle(
-                color: AppColors.textPrimary,
-                fontSize: 20,
-                fontWeight: FontWeight.w700),
-          ),
-          const SizedBox(height: 8),
-          const Text(
-            'Generate and apply your dot wallpaper',
-            style: TextStyle(color: AppColors.textMuted, fontSize: 13),
-          ),
-          const SizedBox(height: 28),
-          Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 40),
-            child: GestureDetector(
-              onTap: () => context.go(AppRoutes.wallpaperPreview),
-              child: Container(
-                width: double.infinity,
-                padding: const EdgeInsets.symmetric(vertical: 16),
-                decoration: BoxDecoration(
+    final settings = widget.settings;
+    final screenH = MediaQuery.of(context).size.height;
+    final mockH = screenH * 0.42;
+    final mockW = mockH * (9 / 19.5);
+
+    final options = [
+      (WallpaperService.locationLockScreen, 'Lock Screen'),
+      (WallpaperService.locationHomeScreen, 'Home Screen'),
+      (WallpaperService.locationBothScreens, 'Both'),
+    ];
+
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        // Title — same as preview screen
+        Row(
+          children: [
+            const Expanded(
+              child: Text(
+                'Wallpaper preview',
+                style: TextStyle(
                   color: AppColors.textPrimary,
-                  borderRadius: BorderRadius.circular(12),
+                  fontSize: 22,
+                  fontWeight: FontWeight.w700,
                 ),
-                child: const Text(
-                  'Preview Wallpaper →',
-                  textAlign: TextAlign.center,
-                  style: TextStyle(
-                      color: AppColors.background,
-                      fontSize: 15,
-                      fontWeight: FontWeight.w600),
+              ),
+            ),
+            // Edit type button
+            GestureDetector(
+              onTap: () => context.go(AppRoutes.changeType),
+              child: Container(
+                padding:
+                    const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+                decoration: BoxDecoration(
+                  color: AppColors.surface,
+                  border: Border.all(color: AppColors.border),
+                  borderRadius: BorderRadius.circular(8),
+                ),
+                child: Row(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    const Icon(Icons.edit_outlined,
+                        color: AppColors.accent, size: 14),
+                    const SizedBox(width: 6),
+                    Text(
+                      settings.calendarType.label,
+                      style: const TextStyle(
+                        color: AppColors.textPrimary,
+                        fontSize: 12,
+                        fontWeight: FontWeight.w600,
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ),
+          ],
+        ),
+        const SizedBox(height: 16),
+
+        // Phone mockup preview — same as preview screen
+        Expanded(
+          child: Center(
+            child: Container(
+              width: mockW,
+              height: mockH,
+              decoration: BoxDecoration(
+                borderRadius: BorderRadius.circular(24),
+                gradient: const LinearGradient(
+                  begin: Alignment.topCenter,
+                  end: Alignment.bottomCenter,
+                  colors: [Color(0xFF3A3A3C), Color(0xFF1C1C1E)],
+                ),
+                boxShadow: [
+                  BoxShadow(
+                    color: Colors.black.withValues(alpha: 0.5),
+                    blurRadius: 24,
+                    offset: const Offset(0, 8),
+                  ),
+                ],
+              ),
+              child: Padding(
+                padding: const EdgeInsets.all(4),
+                child: ClipRRect(
+                  borderRadius: BorderRadius.circular(20),
+                  child: WallpaperCanvas(settings: settings),
                 ),
               ),
             ),
           ),
-        ],
-      ),
+        ),
+        const SizedBox(height: 16),
+
+        // Screen selector — same as preview screen
+        Container(
+          decoration: BoxDecoration(
+            color: AppColors.surface,
+            border: Border.all(color: AppColors.border),
+            borderRadius: BorderRadius.circular(10),
+          ),
+          child: Column(
+            children: options.asMap().entries.map((entry) {
+              final idx = entry.key;
+              final opt = entry.value;
+              final isActive = _selectedLocation == opt.$1;
+              return GestureDetector(
+                onTap: () => setState(() => _selectedLocation = opt.$1),
+                behavior: HitTestBehavior.opaque,
+                child: Container(
+                  padding:
+                      const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
+                  decoration: BoxDecoration(
+                    border: idx < options.length - 1
+                        ? const Border(
+                            bottom: BorderSide(color: AppColors.borderSubtle))
+                        : null,
+                  ),
+                  child: Row(
+                    children: [
+                      AnimatedContainer(
+                        duration: const Duration(milliseconds: 150),
+                        width: 10,
+                        height: 10,
+                        decoration: BoxDecoration(
+                          color: isActive
+                              ? AppColors.accent
+                              : Colors.transparent,
+                          shape: BoxShape.circle,
+                          border: Border.all(
+                            color: isActive
+                                ? AppColors.accent
+                                : AppColors.textMuted,
+                            width: 1.5,
+                          ),
+                        ),
+                      ),
+                      const SizedBox(width: 12),
+                      Expanded(
+                        child: Text(
+                          opt.$2,
+                          style: TextStyle(
+                            color: isActive
+                                ? AppColors.textPrimary
+                                : AppColors.textMuted,
+                            fontSize: 13,
+                          ),
+                        ),
+                      ),
+                      Text(
+                        isActive ? 'Selected' : 'Select',
+                        style: TextStyle(
+                          color: isActive
+                              ? AppColors.accent
+                              : AppColors.textDisabled,
+                          fontSize: 11,
+                          fontWeight:
+                              isActive ? FontWeight.w600 : FontWeight.w400,
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              );
+            }).toList(),
+          ),
+        ),
+        const SizedBox(height: 20),
+
+        // Apply button — same as preview screen
+        PrimaryButton(
+          label: 'Apply Wallpaper →',
+          loading: _applying,
+          onPressed: _apply,
+        ),
+        const SizedBox(height: 16),
+      ],
     );
   }
 }

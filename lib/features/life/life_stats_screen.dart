@@ -40,7 +40,11 @@ class LifeStatsScreen extends ConsumerWidget {
             children: [
               const SizedBox(height: 24),
               GestureDetector(
-                onTap: () => context.go(AppRoutes.lifeInput),
+                onTap: () => context.go(
+                  ref.read(appSettingsProvider).onboardingComplete
+                      ? AppRoutes.home
+                      : AppRoutes.lifeInput,
+                ),
                 child: const Icon(Icons.arrow_back_ios_new,
                     color: AppColors.textMuted, size: 18),
               ),
@@ -102,7 +106,7 @@ class LifeStatsScreen extends ConsumerWidget {
               const SizedBox(height: 12),
               SecondaryButton(
                 label: 'Change Settings',
-                onPressed: () => context.go(AppRoutes.settings),
+                onPressed: () => context.go(AppRoutes.lifeInput),
               ),
               const SizedBox(height: 32),
             ],
