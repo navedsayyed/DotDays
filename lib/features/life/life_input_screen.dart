@@ -207,7 +207,11 @@ class _LifeInputScreenState extends ConsumerState<LifeInputScreen> {
                             .read(appSettingsProvider.notifier)
                             .setLifespan(_lifespan);
                         if (!context.mounted) return;
-                        context.go(AppRoutes.lifeStats);
+                        // Preserve the from chain
+                        final currentUrl = widget.from != null
+                            ? '${AppRoutes.lifeInput}?from=${Uri.encodeComponent(widget.from!)}'
+                            : AppRoutes.lifeInput;
+                        context.go('${AppRoutes.lifeStats}?from=${Uri.encodeComponent(currentUrl)}');
                       },
               ),
               const SizedBox(height: 32),

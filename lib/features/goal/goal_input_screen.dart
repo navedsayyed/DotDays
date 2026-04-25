@@ -215,7 +215,11 @@ class _GoalInputScreenState extends ConsumerState<GoalInputScreen> {
                               end: _endDate!,
                             );
                         if (!context.mounted) return;
-                        context.go(AppRoutes.goalPreview);
+                        // Preserve the from chain
+                        final currentUrl = widget.from != null
+                            ? '${AppRoutes.goalInput}?from=${Uri.encodeComponent(widget.from!)}'
+                            : AppRoutes.goalInput;
+                        context.go('${AppRoutes.goalPreview}?from=${Uri.encodeComponent(currentUrl)}');
                       },
               ),
               const SizedBox(height: 32),
