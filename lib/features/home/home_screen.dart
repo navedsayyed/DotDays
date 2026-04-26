@@ -409,9 +409,6 @@ class _SetTabState extends ConsumerState<_SetTab> {
                 child: Row(
                   mainAxisSize: MainAxisSize.min,
                   children: [
-                    const Icon(Icons.edit_outlined,
-                        color: AppColors.accent, size: 14),
-                    const SizedBox(width: 6),
                     Text(
                       settings.calendarType.label,
                       style: const TextStyle(
@@ -420,6 +417,9 @@ class _SetTabState extends ConsumerState<_SetTab> {
                         fontWeight: FontWeight.w600,
                       ),
                     ),
+                    const SizedBox(width: 4),
+                    const Icon(Icons.expand_more_rounded,
+                        color: AppColors.textMuted, size: 16),
                   ],
                 ),
               ),
