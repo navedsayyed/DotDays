@@ -23,7 +23,7 @@ class GoalPreviewScreen extends ConsumerWidget {
 
     if (start == null || end == null) {
       WidgetsBinding.instance
-          .addPostFrameCallback((_) => context.go(AppRoutes.goalInput));
+          .addPostFrameCallback((_) => context.pushReplacement(from != null ? '${AppRoutes.goalInput}?from=${Uri.encodeComponent(from!)}' : AppRoutes.goalInput));
       return const Scaffold(backgroundColor: AppColors.background);
     }
 

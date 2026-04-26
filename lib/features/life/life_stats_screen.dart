@@ -22,7 +22,7 @@ class LifeStatsScreen extends ConsumerWidget {
 
     if (dob == null) {
       WidgetsBinding.instance
-          .addPostFrameCallback((_) => context.go(AppRoutes.lifeInput));
+          .addPostFrameCallback((_) => context.pushReplacement(from != null ? '${AppRoutes.lifeInput}?from=${Uri.encodeComponent(from!)}' : AppRoutes.lifeInput));
       return const Scaffold(backgroundColor: AppColors.background);
     }
 
