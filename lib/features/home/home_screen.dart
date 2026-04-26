@@ -586,26 +586,6 @@ class _SettingsTabContent extends ConsumerWidget {
               ),
             ),
           ),
-          // Lived dot color
-          _SettingsTile(
-            label: 'Dot color (lived)',
-            trailing: _DotColorRow(
-              selectedColor: s.livedDotColor,
-              onSelect: (c) => notifier.setLivedDotColor(c),
-            ),
-          ),
-          // Today dot
-          _SettingsTile(
-            label: 'Today dot color',
-            trailing: Container(
-              width: 18,
-              height: 18,
-              decoration: const BoxDecoration(
-                color: AppColors.accent,
-                shape: BoxShape.circle,
-              ),
-            ),
-          ),
           // Auto-update
           _SettingsTile(
             label: 'Auto-update wallpaper',
@@ -744,47 +724,6 @@ class _SettingsTile extends StatelessWidget {
           trailing,
         ],
       ),
-    );
-  }
-}
-
-class _DotColorRow extends StatelessWidget {
-  final Color selectedColor;
-  final ValueChanged<Color> onSelect;
-
-  const _DotColorRow({required this.selectedColor, required this.onSelect});
-
-  static const _colors = [
-    Colors.white,
-    Color(0xFFFF6B35),
-    Color(0xFF4CAF50),
-    Color(0xFF2196F3),
-    Color(0xFFE91E63),
-    Color(0xFFFFEB3B),
-  ];
-
-  @override
-  Widget build(BuildContext context) {
-    return Row(
-      mainAxisSize: MainAxisSize.min,
-      children: _colors.map((c) {
-        final selected = c.value == selectedColor.value;
-        return GestureDetector(
-          onTap: () => onSelect(c),
-          child: Container(
-            width: 20,
-            height: 20,
-            margin: const EdgeInsets.only(left: 6),
-            decoration: BoxDecoration(
-              color: c,
-              shape: BoxShape.circle,
-              border: selected
-                  ? Border.all(color: AppColors.accent, width: 2)
-                  : null,
-            ),
-          ),
-        );
-      }).toList(),
     );
   }
 }
