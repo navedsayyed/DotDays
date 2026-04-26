@@ -26,7 +26,7 @@ class SettingsScreen extends ConsumerWidget {
             children: [
               const SizedBox(height: 24),
               GestureDetector(
-                onTap: () => context.go(AppRoutes.home),
+                onTap: () => context.pop(),
                 child: const Icon(Icons.arrow_back_ios_new,
                     color: AppColors.textMuted, size: 18),
               ),
@@ -110,7 +110,7 @@ class SettingsScreen extends ConsumerWidget {
                         label: 'Date of birth',
                         showBorder: false,
                         trailing: GestureDetector(
-                          onTap: () => context.go(AppRoutes.lifeInput),
+                          onTap: () => context.push(AppRoutes.lifeInput),
                           child: const Text(
                             'Edit →',
                             style: TextStyle(

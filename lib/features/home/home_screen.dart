@@ -24,11 +24,24 @@ class HomeScreen extends ConsumerStatefulWidget {
 
 class _HomeScreenState extends ConsumerState<HomeScreen> {
   late int _tab; // 0 = Home, 1 = Set, 2 = Settings
+  final List<int> _tabHistory = [0];
 
   @override
   void initState() {
     super.initState();
     _tab = widget.initialTab;
+    if (_tab != 0) {
+      _tabHistory.add(_tab);
+    }
+  }
+
+  void _onTabTapped(int index) {
+    if (_tab == index) return;
+    setState(() {
+      _tabHistory.remove(index);
+      _tabHistory.add(index);
+      _tab = index;
+    });
   }
 
   @override
@@ -40,17 +53,28 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
     final lifeTotal = DateService.totalDays(settings.lifespan);
     final yearLeft = DateService.daysRemainingInYear;
 
-    return Scaffold(
-      backgroundColor: AppColors.background,
-      bottomNavigationBar: SafeArea(
-        child: Padding(
-          padding: const EdgeInsets.fromLTRB(16, 0, 16, 12),
-          child: _BottomNav(
-            current: _tab,
-            onTap: (i) => setState(() => _tab = i),
+    return PopScope(
+      canPop: _tabHistory.length <= 1,
+      onPopInvoked: (didPop) {
+        if (didPop) return;
+        if (_tabHistory.length > 1) {
+          setState(() {
+            _tabHistory.removeLast();
+            _tab = _tabHistory.last;
+          });
+        }
+      },
+      child: Scaffold(
+        backgroundColor: AppColors.background,
+        bottomNavigationBar: SafeArea(
+          child: Padding(
+            padding: const EdgeInsets.fromLTRB(16, 0, 16, 12),
+            child: _BottomNav(
+              current: _tab,
+              onTap: _onTabTapped,
+            ),
           ),
         ),
-      ),
       body: SafeArea(
         bottom: false,
         child: Padding(
@@ -66,7 +90,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                   : _SettingsTabContent(settings: settings),
         ),
       ),
-    );
+    ));
   }
 }
 
@@ -373,7 +397,7 @@ class _SetTabState extends ConsumerState<_SetTab> {
             ),
             // Edit type button
             GestureDetector(
-              onTap: () => context.go('${AppRoutes.changeType}?from=${Uri.encodeComponent('${AppRoutes.home}?tab=1')}'),
+              onTap: () => context.push('${AppRoutes.changeType}?from=${Uri.encodeComponent('${AppRoutes.home}?tab=1')}'),
               child: Container(
                 padding:
                     const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
@@ -610,7 +634,7 @@ class _SettingsTabContent extends ConsumerWidget {
           _SettingsTile(
             label: 'Date of birth',
             trailing: GestureDetector(
-              onTap: () => context.go(AppRoutes.lifeInput),
+              onTap: () => context.push(AppRoutes.lifeInput),
               child: const Text(
                 'Edit →',
                 style: TextStyle(

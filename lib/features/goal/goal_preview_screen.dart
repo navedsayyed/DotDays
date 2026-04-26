@@ -44,11 +44,7 @@ class GoalPreviewScreen extends ConsumerWidget {
               const SizedBox(height: 24),
               GestureDetector(
                 onTap: () {
-                  if (from != null && from!.isNotEmpty) {
-                    context.go(from!);
-                  } else {
-                    context.go(AppRoutes.home);
-                  }
+                    context.pop();
                 },
                 child: const Icon(Icons.arrow_back_ios_new,
                     color: AppColors.textMuted, size: 18),
@@ -110,7 +106,7 @@ class GoalPreviewScreen extends ConsumerWidget {
                   final currentUrl = from != null
                       ? '${AppRoutes.goalPreview}?from=${Uri.encodeComponent(from!)}'
                       : AppRoutes.goalPreview;
-                  context.go('${AppRoutes.wallpaperPreview}?from=${Uri.encodeComponent(currentUrl)}');
+                  context.push('${AppRoutes.wallpaperPreview}?from=${Uri.encodeComponent(currentUrl)}');
                 },
               ),
               const SizedBox(height: 32),

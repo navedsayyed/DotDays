@@ -40,13 +40,7 @@ class _ChooseTypeScreenState extends ConsumerState<ChooseTypeScreen> {
                 alignment: Alignment.centerLeft,
                 child: GestureDetector(
                   onTap: () {
-                    if (widget.from != null && widget.from!.isNotEmpty) {
-                      context.go(widget.from!);
-                    } else if (widget.fromHome) {
-                      context.go(AppRoutes.home);
-                    } else {
-                      context.go(AppRoutes.welcome);
-                    }
+                    context.pop();
                   },
                   child: const Icon(Icons.arrow_back_ios_new,
                       color: AppColors.textMuted, size: 18),
@@ -115,21 +109,21 @@ class _ChooseTypeScreenState extends ConsumerState<ChooseTypeScreen> {
                       final settings = ref.read(appSettingsProvider);
                       if (settings.onboardingComplete &&
                           settings.dateOfBirth != null) {
-                        context.go('${AppRoutes.lifeStats}?from=$fromParam');
+                        context.push('${AppRoutes.lifeStats}?from=$fromParam');
                       } else {
-                        context.go('${AppRoutes.lifeInput}?from=$fromParam');
+                        context.push('${AppRoutes.lifeInput}?from=$fromParam');
                       }
                     case CalendarType.year:
-                      context.go('${AppRoutes.yearPreview}?from=$fromParam');
+                      context.push('${AppRoutes.yearPreview}?from=$fromParam');
                     case CalendarType.goal:
                       // Skip goal input if already saved
                       final goalSettings = ref.read(appSettingsProvider);
                       if (goalSettings.onboardingComplete &&
                           goalSettings.goalStart != null &&
                           goalSettings.goalEnd != null) {
-                        context.go('${AppRoutes.goalPreview}?from=$fromParam');
+                        context.push('${AppRoutes.goalPreview}?from=$fromParam');
                       } else {
-                        context.go('${AppRoutes.goalInput}?from=$fromParam');
+                        context.push('${AppRoutes.goalInput}?from=$fromParam');
                       }
                   }
                 },

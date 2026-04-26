@@ -101,11 +101,7 @@ class _GoalInputScreenState extends ConsumerState<GoalInputScreen> {
               const SizedBox(height: 24),
               GestureDetector(
                 onTap: () {
-                  if (widget.from != null && widget.from!.isNotEmpty) {
-                    context.go(widget.from!);
-                  } else {
-                    context.go(AppRoutes.home);
-                  }
+                    context.pop();
                 },
                 child: const Icon(Icons.arrow_back_ios_new,
                     color: AppColors.textMuted, size: 18),
@@ -219,7 +215,7 @@ class _GoalInputScreenState extends ConsumerState<GoalInputScreen> {
                         final currentUrl = widget.from != null
                             ? '${AppRoutes.goalInput}?from=${Uri.encodeComponent(widget.from!)}'
                             : AppRoutes.goalInput;
-                        context.go('${AppRoutes.goalPreview}?from=${Uri.encodeComponent(currentUrl)}');
+                        context.push('${AppRoutes.goalPreview}?from=${Uri.encodeComponent(currentUrl)}');
                       },
               ),
               const SizedBox(height: 32),

@@ -84,25 +84,7 @@ class _WallpaperPreviewScreenState
   }
 
   void _handleBack() {
-    // If 'from' route was passed, go back there
-    if (widget.from != null && widget.from!.isNotEmpty) {
-      context.go(widget.from!);
-      return;
-    }
-
-    // Fallback: determine by calendar type
-    final settings = ref.read(appSettingsProvider);
-    switch (settings.calendarType) {
-      case CalendarType.life:
-        context.go(AppRoutes.lifeStats);
-        break;
-      case CalendarType.year:
-        context.go(AppRoutes.yearPreview);
-        break;
-      case CalendarType.goal:
-        context.go(AppRoutes.goalPreview);
-        break;
-    }
+    context.pop();
   }
 
   @override

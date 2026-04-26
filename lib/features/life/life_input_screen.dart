@@ -82,11 +82,7 @@ class _LifeInputScreenState extends ConsumerState<LifeInputScreen> {
               const SizedBox(height: 24),
               GestureDetector(
                 onTap: () {
-                  if (widget.from != null && widget.from!.isNotEmpty) {
-                    context.go(widget.from!);
-                  } else {
-                    context.go(AppRoutes.home);
-                  }
+                    context.pop();
                 },
                 child: const Icon(Icons.arrow_back_ios_new,
                     color: AppColors.textMuted, size: 18),
@@ -211,7 +207,7 @@ class _LifeInputScreenState extends ConsumerState<LifeInputScreen> {
                         final currentUrl = widget.from != null
                             ? '${AppRoutes.lifeInput}?from=${Uri.encodeComponent(widget.from!)}'
                             : AppRoutes.lifeInput;
-                        context.go('${AppRoutes.lifeStats}?from=${Uri.encodeComponent(currentUrl)}');
+                        context.push('${AppRoutes.lifeStats}?from=${Uri.encodeComponent(currentUrl)}');
                       },
               ),
               const SizedBox(height: 32),

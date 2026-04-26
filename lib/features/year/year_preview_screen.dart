@@ -32,11 +32,7 @@ class YearPreviewScreen extends ConsumerWidget {
               const SizedBox(height: 24),
               GestureDetector(
                 onTap: () {
-                  if (from != null && from!.isNotEmpty) {
-                    context.go(from!);
-                  } else {
-                    context.go(AppRoutes.home);
-                  }
+                    context.pop();
                 },
                 child: const Icon(Icons.arrow_back_ios_new,
                     color: AppColors.textMuted, size: 18),
@@ -100,7 +96,7 @@ class YearPreviewScreen extends ConsumerWidget {
                   final currentUrl = from != null
                       ? '${AppRoutes.yearPreview}?from=${Uri.encodeComponent(from!)}'
                       : AppRoutes.yearPreview;
-                  context.go('${AppRoutes.wallpaperPreview}?from=${Uri.encodeComponent(currentUrl)}');
+                  context.push('${AppRoutes.wallpaperPreview}?from=${Uri.encodeComponent(currentUrl)}');
                 },
               ),
               const SizedBox(height: 32),

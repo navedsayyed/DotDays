@@ -49,7 +49,7 @@ class WelcomeScreen extends StatelessWidget {
               // Buttons
               PrimaryButton(
                 label: 'Get Started →',
-                onPressed: () => context.go(AppRoutes.chooseType),
+                onPressed: () => context.push(AppRoutes.chooseType),
               ),
               const SizedBox(height: 12),
               SecondaryButton(
