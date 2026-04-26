@@ -303,8 +303,14 @@ class _SetTab extends ConsumerStatefulWidget {
 }
 
 class _SetTabState extends ConsumerState<_SetTab> {
-  int _selectedLocation = WallpaperService.locationBothScreens;
+  late int _selectedLocation;
   bool _applying = false;
+
+  @override
+  void initState() {
+    super.initState();
+    _selectedLocation = StorageService.getWallpaperLocation();
+  }
 
   Future<void> _apply() async {
     setState(() => _applying = true);

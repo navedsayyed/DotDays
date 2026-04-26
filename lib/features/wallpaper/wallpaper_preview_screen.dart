@@ -24,8 +24,14 @@ class WallpaperPreviewScreen extends ConsumerStatefulWidget {
 class _WallpaperPreviewScreenState
     extends ConsumerState<WallpaperPreviewScreen> {
   final _boundaryKey = GlobalKey();
-  int _selectedLocation = WallpaperService.locationBothScreens;
+  late int _selectedLocation;
   bool _applying = false;
+
+  @override
+  void initState() {
+    super.initState();
+    _selectedLocation = StorageService.getWallpaperLocation();
+  }
 
   Future<void> _apply() async {
     setState(() => _applying = true);
