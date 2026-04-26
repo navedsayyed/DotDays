@@ -582,13 +582,21 @@ class _SettingsTabContent extends ConsumerWidget {
             label: 'Expected lifespan',
             trailing: GestureDetector(
               onTap: () => _showLifespanDialog(context, ref, s.lifespan),
-              child: Text(
-                '${s.lifespan} yrs →',
-                style: const TextStyle(
-                  color: AppColors.accent,
-                  fontSize: 13,
-                  fontWeight: FontWeight.w600,
-                ),
+              child: Row(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  Text(
+                    '${s.lifespan} yrs',
+                    style: const TextStyle(
+                      color: AppColors.accent,
+                      fontSize: 13,
+                      fontWeight: FontWeight.w600,
+                    ),
+                  ),
+                  const SizedBox(width: 4),
+                  const Icon(Icons.arrow_forward_rounded,
+                      size: 14, color: AppColors.accent),
+                ],
               ),
             ),
           ),
@@ -621,13 +629,21 @@ class _SettingsTabContent extends ConsumerWidget {
             label: 'Date of birth',
             trailing: GestureDetector(
               onTap: () => context.push(AppRoutes.lifeInput),
-              child: const Text(
-                'Edit →',
-                style: TextStyle(
-                  color: AppColors.accent,
-                  fontSize: 13,
-                  fontWeight: FontWeight.w600,
-                ),
+              child: const Row(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  Text(
+                    'Edit',
+                    style: TextStyle(
+                      color: AppColors.accent,
+                      fontSize: 13,
+                      fontWeight: FontWeight.w600,
+                    ),
+                  ),
+                  SizedBox(width: 4),
+                  Icon(Icons.arrow_forward_rounded,
+                      size: 14, color: AppColors.accent),
+                ],
               ),
             ),
             showBorder: false,

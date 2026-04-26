@@ -16,6 +16,9 @@ class PrimaryButton extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final hasArrow = label.endsWith(' →');
+    final cleanLabel = hasArrow ? label.substring(0, label.length - 2) : label;
+
     return SizedBox(
       width: double.infinity,
       height: 52,
@@ -38,13 +41,26 @@ class PrimaryButton extends StatelessWidget {
                   valueColor: AlwaysStoppedAnimation(AppColors.background),
                 ),
               )
-            : Text(
-                label,
-                style: const TextStyle(
-                  fontSize: 15,
-                  fontWeight: FontWeight.w600,
-                  color: AppColors.background,
-                ),
+            : Row(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  Text(
+                    cleanLabel,
+                    style: const TextStyle(
+                      fontSize: 15,
+                      fontWeight: FontWeight.w600,
+                      color: AppColors.background,
+                    ),
+                  ),
+                  if (hasArrow) ...[
+                    const SizedBox(width: 6),
+                    const Icon(
+                      Icons.arrow_forward_rounded,
+                      size: 16,
+                      color: AppColors.background,
+                    ),
+                  ],
+                ],
               ),
       ),
     );
@@ -64,6 +80,9 @@ class SecondaryButton extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final hasArrow = label.endsWith(' →');
+    final cleanLabel = hasArrow ? label.substring(0, label.length - 2) : label;
+
     return SizedBox(
       width: double.infinity,
       height: 48,
@@ -76,13 +95,26 @@ class SecondaryButton extends StatelessWidget {
             borderRadius: BorderRadius.circular(12),
           ),
         ),
-        child: Text(
-          label,
-          style: const TextStyle(
-            fontSize: 14,
-            fontWeight: FontWeight.w500,
-            color: AppColors.textPrimary,
-          ),
+        child: Row(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Text(
+              cleanLabel,
+              style: const TextStyle(
+                fontSize: 14,
+                fontWeight: FontWeight.w500,
+                color: AppColors.textPrimary,
+              ),
+            ),
+            if (hasArrow) ...[
+              const SizedBox(width: 4),
+              const Icon(
+                Icons.arrow_forward_rounded,
+                size: 16,
+                color: AppColors.textPrimary,
+              ),
+            ],
+          ],
         ),
       ),
     );

@@ -50,13 +50,21 @@ class SettingsScreen extends ConsumerWidget {
                         trailing: GestureDetector(
                           onTap: () =>
                               _showLifespanDialog(context, ref, settings.lifespan),
-                          child: Text(
-                            '${settings.lifespan} yrs →',
-                            style: const TextStyle(
-                              color: AppColors.accent,
-                              fontSize: 13,
-                              fontWeight: FontWeight.w600,
-                            ),
+                          child: Row(
+                            mainAxisSize: MainAxisSize.min,
+                            children: [
+                              Text(
+                                '${settings.lifespan} yrs',
+                                style: const TextStyle(
+                                  color: AppColors.accent,
+                                  fontSize: 13,
+                                  fontWeight: FontWeight.w600,
+                                ),
+                              ),
+                              const SizedBox(width: 4),
+                              const Icon(Icons.arrow_forward_rounded,
+                                  size: 14, color: AppColors.accent),
+                            ],
                           ),
                         ),
                       ),
@@ -111,13 +119,21 @@ class SettingsScreen extends ConsumerWidget {
                         showBorder: false,
                         trailing: GestureDetector(
                           onTap: () => context.push(AppRoutes.lifeInput),
-                          child: const Text(
-                            'Edit →',
-                            style: TextStyle(
-                              color: AppColors.accent,
-                              fontSize: 13,
-                              fontWeight: FontWeight.w600,
-                            ),
+                          child: const Row(
+                            mainAxisSize: MainAxisSize.min,
+                            children: [
+                              Text(
+                                'Edit',
+                                style: TextStyle(
+                                  color: AppColors.accent,
+                                  fontSize: 13,
+                                  fontWeight: FontWeight.w600,
+                                ),
+                              ),
+                              SizedBox(width: 4),
+                              Icon(Icons.arrow_forward_rounded,
+                                  size: 14, color: AppColors.accent),
+                            ],
                           ),
                         ),
                       ),
