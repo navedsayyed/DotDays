@@ -9,6 +9,7 @@ import '../../services/wallpaper_service.dart';
 import '../../services/headless_wallpaper_renderer.dart';
 import '../../services/storage_service.dart';
 import '../../services/background_service.dart';
+import '../../services/battery_optimization_service.dart';
 import '../../routes/app_router.dart';
 import '../wallpaper/wallpaper_canvas.dart';
 
@@ -72,6 +73,13 @@ class _WallpaperPreviewScreenState
     }
     if (!mounted) return;
     if (success) {
+      if (!wasAlreadySetup) {
+        final isExempt = await BatteryOptimizationService.isIgnoringBatteryOptimization();
+        if (!isExempt) {
+          await BatteryOptimizationService.requestIgnoreBatteryOptimization();
+        }
+      }
+      
       // First time → success screen. Returning user → straight home.
       context.go(wasAlreadySetup ? AppRoutes.home : AppRoutes.success);
     } else if (errorMsg != null) {
