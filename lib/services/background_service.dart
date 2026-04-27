@@ -10,6 +10,7 @@ import 'wallpaper_service.dart';
 @pragma('vm:entry-point')
 void callbackDispatcher() {
   Workmanager().executeTask((task, inputData) async {
+    WidgetsFlutterBinding.ensureInitialized();
     try {
       // Re-init storage since this runs in a separate isolate
       await StorageService.init();
