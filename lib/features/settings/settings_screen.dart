@@ -116,7 +116,6 @@ class SettingsScreen extends ConsumerWidget {
                       // Date of birth
                       SettingsRow(
                         label: 'Date of birth',
-                        showBorder: false,
                         trailing: GestureDetector(
                           onTap: () => context.push(AppRoutes.lifeInput),
                           child: const Row(
@@ -135,6 +134,36 @@ class SettingsScreen extends ConsumerWidget {
                                   size: 14, color: AppColors.accent),
                             ],
                           ),
+                        ),
+                      ),
+                      const SizedBox(height: 24), // Spacing for new section
+                      const Text(
+                        'LEGAL & ABOUT',
+                        style: TextStyle(
+                          color: AppColors.textMuted,
+                          fontSize: 10,
+                          fontWeight: FontWeight.w600,
+                          letterSpacing: 0.5,
+                        ),
+                      ),
+                      const SizedBox(height: 10),
+                      // Privacy Policy
+                      SettingsRow(
+                        label: 'Privacy Policy',
+                        trailing: GestureDetector(
+                          onTap: () => context.push(AppRoutes.privacy),
+                          child: const Icon(Icons.arrow_forward_ios_rounded,
+                              size: 14, color: AppColors.textMuted),
+                        ),
+                      ),
+                      // Terms of Service
+                      SettingsRow(
+                        label: 'Terms of Service',
+                        showBorder: false,
+                        trailing: GestureDetector(
+                          onTap: () => context.push(AppRoutes.terms),
+                          child: const Icon(Icons.arrow_forward_ios_rounded,
+                              size: 14, color: AppColors.textMuted),
                         ),
                       ),
                     ],

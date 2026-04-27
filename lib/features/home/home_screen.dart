@@ -646,7 +646,36 @@ class _SettingsTabContent extends ConsumerWidget {
                 ],
               ),
             ),
+          ),
+          const SizedBox(height: 24),
+          const Text(
+            'LEGAL & ABOUT',
+            style: TextStyle(
+              color: AppColors.textMuted,
+              fontSize: 10,
+              fontWeight: FontWeight.w600,
+              letterSpacing: 0.5,
+            ),
+          ),
+          const SizedBox(height: 10),
+          // Privacy Policy
+          _SettingsTile(
+            label: 'Privacy Policy',
+            trailing: GestureDetector(
+              onTap: () => context.push(AppRoutes.privacy),
+              child: const Icon(Icons.arrow_forward_ios_rounded,
+                  size: 14, color: AppColors.textMuted),
+            ),
+          ),
+          // Terms of Service
+          _SettingsTile(
+            label: 'Terms of Service',
             showBorder: false,
+            trailing: GestureDetector(
+              onTap: () => context.push(AppRoutes.terms),
+              child: const Icon(Icons.arrow_forward_ios_rounded,
+                  size: 14, color: AppColors.textMuted),
+            ),
           ),
         ],
       ),

@@ -14,6 +14,7 @@ import '../features/wallpaper/wallpaper_preview_screen.dart';
 import '../features/onboarding/success_screen.dart';
 import '../features/home/home_screen.dart';
 import '../features/settings/settings_screen.dart';
+import '../features/settings/legal_screen.dart';
 
 class AppRoutes {
   static const String welcome = '/';
@@ -28,6 +29,8 @@ class AppRoutes {
   static const String home = '/home';
   static const String settings = '/settings';
   static const String changeType = '/change-type';
+  static const String privacy = '/privacy';
+  static const String terms = '/terms';
 }
 
 // Stable router — created once, never re-created.
@@ -114,6 +117,48 @@ final routerProvider = Provider<GoRouter>((ref) {
         builder: (context, state) => ChooseTypeScreen(
           fromHome: true,
           from: state.uri.queryParameters['from'],
+        ),
+      ),
+      GoRoute(
+        path: AppRoutes.privacy,
+        builder: (context, state) => const LegalScreen(
+          title: 'Privacy Policy',
+          content: 'DotDays is committed to protecting your privacy.\n\n'
+              '1. Data Collection\n'
+              'DotDays is a privacy-first application. All data you enter into the app '
+              '(including your calendar type, date of birth, goal, and visual preferences) '
+              'is stored locally on your device.\n\n'
+              '2. Data Transmission\n'
+              'We do not transmit, upload, or share your personal data with any third '
+              'parties. The app does not require an internet connection to function.\n\n'
+              '3. Third-party Services\n'
+              'This application does not integrate with any third-party analytics or '
+              'advertising trackers.\n\n'
+              '4. Changes to This Policy\n'
+              'If we decide to change our privacy policy, we will update the modified '
+              'date below.\n\n'
+              'Last modified: April 2026',
+        ),
+      ),
+      GoRoute(
+        path: AppRoutes.terms,
+        builder: (context, state) => const LegalScreen(
+          title: 'Terms of Service',
+          content: 'By using DotDays, you agree to these terms.\n\n'
+              '1. Use of the App\n'
+              'DotDays is provided "as is", for your personal use. You may not distribute '
+              'or commercially exploit the app without permission.\n\n'
+              '2. User Data\n'
+              'You are responsible for the data you input into the app. Because data is '
+              'stored locally, we cannot recover it if your phone is lost or reset.\n\n'
+              '3. Disclaimer of Warranties\n'
+              'The app is provided on an "as is" and "as available" basis without any '
+              'warranties of any kind. We do not guarantee that the app will be completely '
+              'free of errors.\n\n'
+              '4. Limitation of Liability\n'
+              'In no event shall the developers be liable for any indirect, incidental, '
+              'special, or consequential damages arising out of your use of the app.\n\n'
+              'Last updated: April 2026',
         ),
       ),
     ],
