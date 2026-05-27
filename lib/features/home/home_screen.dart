@@ -150,7 +150,7 @@ class _HomeTab extends StatelessWidget {
                 ),
                 const SizedBox(height: 8),
                 const Text(
-                  'Track lifeee, year, and goals in one place.\nSet your wallpaper and stay focused every day.',
+                  'Track life, year, and goals in one place.\nSet your wallpaper and stay focused every day.',
                   style: TextStyle(
                     color: AppColors.textMuted,
                     fontSize: 12,

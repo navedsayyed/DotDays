@@ -4,7 +4,6 @@ import 'core/theme/app_theme.dart';
 import 'routes/app_router.dart';
 import 'services/storage_service.dart';
 import 'services/background_service.dart';
-import 'services/wallpaper_auto_updater.dart';
 import 'services/battery_optimization_service.dart';
 
 void main() async {
@@ -17,8 +16,9 @@ void main() async {
   // Ensure the periodic background task is scheduled (survives reboots)
   await BackgroundService.ensureScheduled();
 
-  // Auto-update wallpaper if day changed (immediate fallback for background task)
-  WallpaperAutoUpdater.checkAndUpdate();
+  // NOTE: We do NOT call WallpaperAutoUpdater.checkAndUpdate() on startup.
+  // Doing so would overwrite any wallpaper the user set from Gallery or
+  // another app. The midnight alarm (BackgroundService) handles daily updates.
 
   // Request battery optimization exemption so Android doesn't kill the task
   _requestBatteryOptimizationIfNeeded();
@@ -63,7 +63,12 @@ class _LifeInDotsAppState extends ConsumerState<LifeInDotsApp> with WidgetsBindi
   @override
   void didChangeAppLifecycleState(AppLifecycleState state) {
     if (state == AppLifecycleState.resumed) {
-      WallpaperAutoUpdater.checkAndUpdate();
+      // NOTE: We intentionally do NOT call WallpaperAutoUpdater.checkAndUpdate()
+      // here. Re-applying the wallpaper on every app resume would overwrite any
+      // wallpaper the user set from Gallery or another app. The midnight
+      // background alarm (BackgroundService) handles the daily dot-update.
+      // We only re-ensure the alarm is still scheduled.
+      BackgroundService.ensureScheduled();
     }
   }
 
