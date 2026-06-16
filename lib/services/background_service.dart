@@ -1,7 +1,7 @@
 import 'dart:io';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:android_alarm_manager_plus/android_alarm_manager_plus.dart';
-import '../core/constants/app_constants.dart';
 import '../shared/models/calendar_type.dart';
 import 'storage_service.dart';
 import 'headless_wallpaper_renderer.dart';
@@ -11,8 +11,12 @@ import 'wallpaper_service.dart';
 void alarmCallbackDispatcher() async {
   WidgetsFlutterBinding.ensureInitialized();
   try {
-    // Re-init storage since this runs in a separate isolate
+    // Re-init storage since this runs in a separate isolate.
+    // reload() ensures we read the FRESHEST values, including the
+    // smart_wallpaper_location written by the native PreCheckReceiver
+    // at 23:50 (10 minutes before this callback fires at 00:00:05).
     await StorageService.init();
+    await StorageService.reload();
 
     final autoUpdate = StorageService.getAutoUpdate();
     if (!autoUpdate) return;
@@ -31,6 +35,26 @@ void alarmCallbackDispatcher() async {
 
     debugPrint('BackgroundService: daily wallpaper update starting');
 
+    // Read the smart wallpaper location computed by native WallpaperIdChecker.
+    // This is set by EITHER:
+    //   1. DotDaysApplication.onCreate() — when the process is freshly started
+    //   2. PreCheckReceiver — fires at 23:50 every night (10 min before this alarm)
+    // This tells us which screens still have DotDays wallpaper.
+    // -1 means user changed ALL screens externally → skip update.
+    final smartLocation = StorageService.getInt('dotdays_smart_wallpaper_location');
+    final wallpaperLocation = StorageService.getWallpaperLocation();
+
+    // Use the native-computed smart location, fall back to saved location
+    final effectiveLocation = smartLocation ?? wallpaperLocation;
+
+    if (effectiveLocation == -1) {
+      debugPrint('BackgroundService: user changed all screens externally, skipping');
+      await StorageService.setString('wallpaper_last_update_day', todayKey);
+      return;
+    }
+
+    debugPrint('BackgroundService: applying to location=$effectiveLocation (saved=$wallpaperLocation, smart=$smartLocation)');
+
     // Read settings from storage
     final calTypeStr = StorageService.getCalendarType();
     final calendarType = calTypeStr != null
@@ -42,7 +66,6 @@ void alarmCallbackDispatcher() async {
     final goalStart = StorageService.getGoalStart();
     final goalEnd = StorageService.getGoalEnd();
     final livedDotColorVal = StorageService.getLivedDotColor();
-    final wallpaperLocation = StorageService.getWallpaperLocation();
 
     // Render new wallpaper with today's date
     final file = await HeadlessWallpaperRenderer.render(
@@ -56,16 +79,27 @@ void alarmCallbackDispatcher() async {
     );
 
     if (file != null) {
-      // Apply the regenerated wallpaper
       final success =
-          await WallpaperService.applyWallpaper(file, wallpaperLocation);
+          await WallpaperService.applyWallpaper(file, effectiveLocation);
       if (success) {
-        // Track last update day so app-launch updater doesn't duplicate
-        await StorageService.setString(
-            'wallpaper_last_update_day', todayKey);
+        await StorageService.setString('wallpaper_last_update_day', todayKey);
+
+        // Try to save new wallpaper IDs via SmartWallpaperPlugin
+        // (works on background engines since it's registered via GeneratedPluginRegistrant)
+        try {
+          const smartChannel = MethodChannel('com.example.dotdays/smart_wallpaper');
+          await smartChannel.invokeMethod('saveCurrentIds');
+          debugPrint('BackgroundService: IDs saved via SmartWallpaperPlugin');
+        } catch (e) {
+          // If plugin not available, mark IDs as stale for foreground
+          await StorageService.setBool('dotdays_ids_stale', true);
+          debugPrint('BackgroundService: marked IDs stale ($e)');
+        }
+
+        debugPrint('BackgroundService: wallpaper applied successfully');
+      } else {
+        debugPrint('BackgroundService: failed to apply wallpaper');
       }
-      debugPrint(
-          'BackgroundService: wallpaper applied = $success (location=$wallpaperLocation)');
     } else {
       debugPrint('BackgroundService: failed to render wallpaper');
     }

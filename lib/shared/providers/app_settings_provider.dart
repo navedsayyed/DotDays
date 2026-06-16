@@ -21,6 +21,7 @@ class AppSettingsNotifier extends StateNotifier<AppSettings> {
     final showDayCounter = StorageService.getShowDayCounter();
     final livedDotColorVal = StorageService.getLivedDotColor();
     final onboardingComplete = StorageService.getOnboardingComplete();
+    final wallpaperLocation = StorageService.getWallpaperLocation();
 
     state = AppSettings(
       calendarType: calTypeStr != null
@@ -36,6 +37,7 @@ class AppSettingsNotifier extends StateNotifier<AppSettings> {
       showDayCounter: showDayCounter,
       livedDotColor: Color(livedDotColorVal),
       onboardingComplete: onboardingComplete,
+      wallpaperLocation: wallpaperLocation,
     );
   }
 
@@ -88,6 +90,11 @@ class AppSettingsNotifier extends StateNotifier<AppSettings> {
   Future<void> setOnboardingComplete(bool val) async {
     await StorageService.setOnboardingComplete(val);
     state = state.copyWith(onboardingComplete: val);
+  }
+
+  Future<void> setWallpaperLocation(int location) async {
+    await StorageService.setWallpaperLocation(location);
+    state = state.copyWith(wallpaperLocation: location);
   }
 }
 

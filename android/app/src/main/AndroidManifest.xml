@@ -7,10 +7,13 @@
     <uses-permission android:name="android.permission.REQUEST_IGNORE_BATTERY_OPTIMIZATIONS"/>
     <uses-permission android:name="android.permission.SCHEDULE_EXACT_ALARM"/>
     <uses-permission android:name="android.permission.USE_EXACT_ALARM"/>
+    <!-- Needed to read current wallpaper for OEM quirk workaround (save/restore) -->
+    <uses-permission android:name="android.permission.READ_EXTERNAL_STORAGE"
+        android:maxSdkVersion="32"/>
 
     <application
         android:label="DotDays"
-        android:name="${applicationName}"
+        android:name=".DotDaysApplication"
         android:icon="@mipmap/ic_launcher">
         <activity
             android:name=".MainActivity"
@@ -31,7 +34,7 @@
             </intent-filter>
         </activity>
 
-        <!-- Re-schedule WorkManager after phone reboot -->
+        <!-- Re-schedule alarms after phone reboot -->
         <receiver
             android:name=".BootReceiver"
             android:enabled="true"
@@ -42,6 +45,13 @@
                 <action android:name="android.intent.action.QUICKBOOT_POWERON"/>
             </intent-filter>
         </receiver>
+
+        <!-- Pre-check receiver: runs at 23:50 to detect wallpaper changes
+             before the midnight Dart alarm fires -->
+        <receiver
+            android:name=".PreCheckReceiver"
+            android:enabled="true"
+            android:exported="false"/>
 
         <!-- android_alarm_manager_plus requirements -->
         <service

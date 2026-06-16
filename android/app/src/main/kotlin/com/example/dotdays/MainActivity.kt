@@ -10,11 +10,14 @@ import io.flutter.embedding.engine.FlutterEngine
 import io.flutter.plugin.common.MethodChannel
 
 class MainActivity : FlutterActivity() {
-    private val CHANNEL = "com.example.dotdays/battery"
+    private val BATTERY_CHANNEL = "com.example.dotdays/battery"
+    private val WALLPAPER_CHANNEL = "com.example.dotdays/wallpaper_id"
 
     override fun configureFlutterEngine(flutterEngine: FlutterEngine) {
         super.configureFlutterEngine(flutterEngine)
-        MethodChannel(flutterEngine.dartExecutor.binaryMessenger, CHANNEL)
+
+        // Battery optimization channel
+        MethodChannel(flutterEngine.dartExecutor.binaryMessenger, BATTERY_CHANNEL)
             .setMethodCallHandler { call, result ->
                 when (call.method) {
                     "requestIgnoreBatteryOptimization" -> {
@@ -23,6 +26,48 @@ class MainActivity : FlutterActivity() {
                     }
                     "isIgnoringBatteryOptimization" -> {
                         result.success(isIgnoringBatteryOptimization())
+                    }
+                    else -> result.notImplemented()
+                }
+            }
+
+        // Wallpaper ID channel — used in foreground to detect external wallpaper changes
+        // and to apply wallpaper with OEM quirk workaround
+        MethodChannel(flutterEngine.dartExecutor.binaryMessenger, WALLPAPER_CHANNEL)
+            .setMethodCallHandler { call, result ->
+                when (call.method) {
+                    "getWallpaperIds" -> {
+                        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N) {
+                            val wm = android.app.WallpaperManager.getInstance(this)
+                            val homeId = wm.getWallpaperId(android.app.WallpaperManager.FLAG_SYSTEM)
+                            val lockId = wm.getWallpaperId(android.app.WallpaperManager.FLAG_LOCK)
+                            result.success(mapOf("home" to homeId, "lock" to lockId))
+                        } else {
+                            result.success(mapOf("home" to -1, "lock" to -1))
+                        }
+                    }
+                    "saveCurrentIds" -> {
+                        WallpaperIdChecker.saveCurrentIds(this)
+                        result.success(null)
+                    }
+                    "computeSmartLocation" -> {
+                        val smart = WallpaperIdChecker.computeAndSaveSmartLocation(this)
+                        result.success(smart)
+                    }
+                    "smartSetWallpaper" -> {
+                        // OEM-aware wallpaper setter that preserves the other screen
+                        val imageBytes = call.argument<ByteArray>("imageBytes")
+                        val location = call.argument<Int>("location")
+                        if (imageBytes == null || location == null) {
+                            result.error("INVALID_ARGS", "imageBytes and location required", null)
+                            return@setMethodCallHandler
+                        }
+                        try {
+                            val success = SmartWallpaperSetter.applyWallpaper(this, imageBytes, location)
+                            result.success(success)
+                        } catch (e: Exception) {
+                            result.error("WALLPAPER_ERROR", e.message, null)
+                        }
                     }
                     else -> result.notImplemented()
                 }

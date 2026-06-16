@@ -4,9 +4,14 @@ import '../shared/models/calendar_type.dart';
 import 'storage_service.dart';
 import 'headless_wallpaper_renderer.dart';
 import 'wallpaper_service.dart';
+import 'wallpaper_id_service.dart';
 
 /// Service that checks on app launch whether the wallpaper needs updating
 /// (i.e., day has changed since last update) and regenerates + reapplies it.
+///
+/// This runs in the FOREGROUND, so method channels work here.
+/// The foreground detection in main.dart already updates wallpaperLocation
+/// before this is called, so we can just read the stored location.
 class WallpaperAutoUpdater {
   WallpaperAutoUpdater._();
 
@@ -45,6 +50,9 @@ class WallpaperAutoUpdater {
       final goalStart = StorageService.getGoalStart();
       final goalEnd = StorageService.getGoalEnd();
       final livedDotColorVal = StorageService.getLivedDotColor();
+
+      // wallpaperLocation was already updated by detectAndUpdateLocation()
+      // in main.dart before this runs, so it reflects any external changes.
       final wallpaperLocation = StorageService.getWallpaperLocation();
 
       final file = await HeadlessWallpaperRenderer.render(
@@ -62,7 +70,9 @@ class WallpaperAutoUpdater {
             await WallpaperService.applyWallpaper(file, wallpaperLocation);
         if (success) {
           await StorageService.setString(_keyLastUpdateDay, todayKey);
-          debugPrint('WallpaperAutoUpdater: wallpaper updated for $todayKey');
+          // Save new IDs since we're in the foreground (method channel works)
+          await WallpaperIdService.saveCurrentIds();
+          debugPrint('WallpaperAutoUpdater: wallpaper updated for $todayKey (location=$wallpaperLocation)');
         }
       }
     } catch (e) {

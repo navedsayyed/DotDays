@@ -13,6 +13,7 @@ class AppSettings {
   final bool showDayCounter;
   final Color livedDotColor;
   final bool onboardingComplete;
+  final int wallpaperLocation;
 
   const AppSettings({
     this.calendarType = CalendarType.life,
@@ -26,6 +27,7 @@ class AppSettings {
     this.showDayCounter = false,
     this.livedDotColor = const Color(0xFFFFFFFF),
     this.onboardingComplete = false,
+    this.wallpaperLocation = 3,
   });
 
   AppSettings copyWith({
@@ -40,6 +42,7 @@ class AppSettings {
     bool? showDayCounter,
     Color? livedDotColor,
     bool? onboardingComplete,
+    int? wallpaperLocation,
   }) {
     return AppSettings(
       calendarType: calendarType ?? this.calendarType,
@@ -53,6 +56,7 @@ class AppSettings {
       showDayCounter: showDayCounter ?? this.showDayCounter,
       livedDotColor: livedDotColor ?? this.livedDotColor,
       onboardingComplete: onboardingComplete ?? this.onboardingComplete,
+      wallpaperLocation: wallpaperLocation ?? this.wallpaperLocation,
     );
   }
 }

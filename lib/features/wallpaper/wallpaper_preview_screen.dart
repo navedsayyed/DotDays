@@ -10,6 +10,7 @@ import '../../services/headless_wallpaper_renderer.dart';
 import '../../services/storage_service.dart';
 import '../../services/background_service.dart';
 import '../../services/battery_optimization_service.dart';
+import '../../services/wallpaper_id_service.dart';
 import '../../routes/app_router.dart';
 import '../wallpaper/wallpaper_canvas.dart';
 
@@ -58,6 +59,8 @@ class _WallpaperPreviewScreenState
       if (ok) {
         // Save wallpaper location so background task can re-apply to same screen
         await StorageService.setWallpaperLocation(_selectedLocation);
+        // Save wallpaper IDs for smart detection (auto-detects external changes)
+        await WallpaperIdService.saveCurrentIds();
         if (settings.autoUpdate) await BackgroundService.scheduleDaily();
         await ref
             .read(appSettingsProvider.notifier)

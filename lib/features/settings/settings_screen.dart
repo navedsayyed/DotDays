@@ -7,6 +7,7 @@ import '../../shared/widgets/misc_widgets.dart';
 import '../../core/theme/app_colors.dart';
 import '../../core/constants/app_constants.dart';
 import '../../routes/app_router.dart';
+import '../../services/wallpaper_service.dart';
 
 class SettingsScreen extends ConsumerWidget {
   const SettingsScreen({super.key});
@@ -97,12 +98,29 @@ class SettingsScreen extends ConsumerWidget {
                           onChanged: (v) => notifier.setAutoUpdate(v),
                         ),
                       ),
-                      // Lock screen
+                      // Wallpaper screen location
                       SettingsRow(
-                        label: 'Show on lock screen',
-                        trailing: AppToggle(
-                          value: settings.lockScreen,
-                          onChanged: (v) => notifier.setLockScreen(v),
+                        label: 'Wallpaper screen',
+                        trailing: GestureDetector(
+                          onTap: () => _showWallpaperLocationDialog(
+                              context, ref, settings.wallpaperLocation),
+                          child: Row(
+                            mainAxisSize: MainAxisSize.min,
+                            children: [
+                              Text(
+                                _wallpaperLocationLabel(
+                                    settings.wallpaperLocation),
+                                style: const TextStyle(
+                                  color: AppColors.accent,
+                                  fontSize: 13,
+                                  fontWeight: FontWeight.w600,
+                                ),
+                              ),
+                              const SizedBox(width: 4),
+                              const Icon(Icons.arrow_forward_rounded,
+                                  size: 14, color: AppColors.accent),
+                            ],
+                          ),
                         ),
                       ),
                       // Day counter
@@ -245,6 +263,115 @@ class SettingsScreen extends ConsumerWidget {
             ),
           ],
         ),
+      ),
+    );
+  }
+
+  String _wallpaperLocationLabel(int location) {
+    switch (location) {
+      case WallpaperService.locationHomeScreen:
+        return 'Home Screen';
+      case WallpaperService.locationLockScreen:
+        return 'Lock Screen';
+      case WallpaperService.locationBothScreens:
+      default:
+        return 'Both';
+    }
+  }
+
+  void _showWallpaperLocationDialog(
+      BuildContext context, WidgetRef ref, int current) {
+    final options = [
+      (WallpaperService.locationHomeScreen, 'Home Screen'),
+      (WallpaperService.locationLockScreen, 'Lock Screen'),
+      (WallpaperService.locationBothScreens, 'Both Screens'),
+    ];
+
+    showDialog(
+      context: context,
+      builder: (ctx) => StatefulBuilder(
+        builder: (ctx, setInner) {
+          int selected = current;
+          return AlertDialog(
+            backgroundColor: AppColors.surface,
+            title: const Text(
+              'Update wallpaper on',
+              style: TextStyle(color: AppColors.textPrimary, fontSize: 17),
+            ),
+            content: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                const Text(
+                  'Choose which screen DotDays auto-updates.\nOther screen keeps your gallery wallpaper.',
+                  style: TextStyle(
+                    color: AppColors.textMuted,
+                    fontSize: 12,
+                  ),
+                ),
+                const SizedBox(height: 16),
+                ...options.map((opt) => GestureDetector(
+                      onTap: () => setInner(() => selected = opt.$1),
+                      behavior: HitTestBehavior.opaque,
+                      child: Padding(
+                        padding: const EdgeInsets.symmetric(vertical: 8),
+                        child: Row(
+                          children: [
+                            AnimatedContainer(
+                              duration: const Duration(milliseconds: 150),
+                              width: 18,
+                              height: 18,
+                              decoration: BoxDecoration(
+                                color: selected == opt.$1
+                                    ? AppColors.accent
+                                    : Colors.transparent,
+                                shape: BoxShape.circle,
+                                border: Border.all(
+                                  color: selected == opt.$1
+                                      ? AppColors.accent
+                                      : AppColors.textMuted,
+                                  width: 1.5,
+                                ),
+                              ),
+                              child: selected == opt.$1
+                                  ? const Icon(Icons.check,
+                                      size: 12, color: Colors.white)
+                                  : null,
+                            ),
+                            const SizedBox(width: 12),
+                            Text(
+                              opt.$2,
+                              style: TextStyle(
+                                color: selected == opt.$1
+                                    ? AppColors.textPrimary
+                                    : AppColors.textSecondary,
+                                fontSize: 14,
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                    )),
+              ],
+            ),
+            actions: [
+              TextButton(
+                onPressed: () => Navigator.pop(ctx),
+                child: const Text('Cancel',
+                    style: TextStyle(color: AppColors.textMuted)),
+              ),
+              TextButton(
+                onPressed: () async {
+                  await ref
+                      .read(appSettingsProvider.notifier)
+                      .setWallpaperLocation(selected);
+                  if (context.mounted) Navigator.pop(ctx);
+                },
+                child: const Text('Save',
+                    style: TextStyle(color: AppColors.accent)),
+              ),
+            ],
+          );
+        },
       ),
     );
   }

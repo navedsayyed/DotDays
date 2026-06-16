@@ -8,6 +8,13 @@ class StorageService {
     _prefs = await SharedPreferences.getInstance();
   }
 
+  /// Force re-read from native SharedPreferences.
+  /// Call this in the background isolate to pick up values
+  /// written by native Kotlin code (e.g. PreCheckReceiver).
+  static Future<void> reload() async {
+    await _prefs.reload();
+  }
+
   // Calendar type
   static String? getCalendarType() => _prefs.getString(AppConstants.keyCalendarType);
   static Future<void> setCalendarType(String type) =>
@@ -90,4 +97,9 @@ class StorageService {
   static bool? getBool(String key) => _prefs.getBool(key);
   static Future<void> setBool(String key, bool val) =>
       _prefs.setBool(key, val);
+
+  // Generic int get/set (for values like smart_wallpaper_location)
+  static int? getInt(String key) => _prefs.getInt(key);
+  static Future<void> setInt(String key, int val) =>
+      _prefs.setInt(key, val);
 }
