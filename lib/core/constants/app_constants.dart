@@ -25,6 +25,8 @@ class AppConstants {
   static const String keyGoalStart = 'goal_start';
   static const String keyGoalEnd = 'goal_end';
   static const String keyAutoUpdate = 'auto_update';
+  static const String keyAutoUpdateHome = 'auto_update_home';
+  static const String keyAutoUpdateLock = 'auto_update_lock';
   static const String keyLockScreen = 'lock_screen';
   static const String keyShowDayCounter = 'show_day_counter';
   static const String keyLivedDotColor = 'lived_dot_color';

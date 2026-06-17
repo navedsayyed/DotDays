@@ -9,6 +9,8 @@ class AppSettings {
   final DateTime? goalStart;
   final DateTime? goalEnd;
   final bool autoUpdate;
+  final bool autoUpdateHome;
+  final bool autoUpdateLock;
   final bool lockScreen;
   final bool showDayCounter;
   final Color livedDotColor;
@@ -23,6 +25,8 @@ class AppSettings {
     this.goalStart,
     this.goalEnd,
     this.autoUpdate = true,
+    this.autoUpdateHome = true,
+    this.autoUpdateLock = true,
     this.lockScreen = true,
     this.showDayCounter = false,
     this.livedDotColor = const Color(0xFFFFFFFF),
@@ -38,6 +42,8 @@ class AppSettings {
     DateTime? goalStart,
     DateTime? goalEnd,
     bool? autoUpdate,
+    bool? autoUpdateHome,
+    bool? autoUpdateLock,
     bool? lockScreen,
     bool? showDayCounter,
     Color? livedDotColor,
@@ -52,6 +58,8 @@ class AppSettings {
       goalStart: goalStart ?? this.goalStart,
       goalEnd: goalEnd ?? this.goalEnd,
       autoUpdate: autoUpdate ?? this.autoUpdate,
+      autoUpdateHome: autoUpdateHome ?? this.autoUpdateHome,
+      autoUpdateLock: autoUpdateLock ?? this.autoUpdateLock,
       lockScreen: lockScreen ?? this.lockScreen,
       showDayCounter: showDayCounter ?? this.showDayCounter,
       livedDotColor: livedDotColor ?? this.livedDotColor,

@@ -10,7 +10,6 @@ import '../../services/headless_wallpaper_renderer.dart';
 import '../../services/storage_service.dart';
 import '../../services/background_service.dart';
 import '../../services/battery_optimization_service.dart';
-import '../../services/wallpaper_id_service.dart';
 import '../../routes/app_router.dart';
 import '../wallpaper/wallpaper_canvas.dart';
 
@@ -57,10 +56,20 @@ class _WallpaperPreviewScreenState
       if (file == null) throw Exception('Failed to render wallpaper');
       final ok = await WallpaperService.applyWallpaper(file, _selectedLocation);
       if (ok) {
-        // Save wallpaper location so background task can re-apply to same screen
+        // Save wallpaper location
         await StorageService.setWallpaperLocation(_selectedLocation);
-        // Save wallpaper IDs for smart detection (auto-detects external changes)
-        await WallpaperIdService.saveCurrentIds();
+        // Set per-screen auto-update flags based on which screens user chose
+        final notifier = ref.read(appSettingsProvider.notifier);
+        if (_selectedLocation == WallpaperService.locationBothScreens) {
+          await notifier.setAutoUpdateHome(true);
+          await notifier.setAutoUpdateLock(true);
+        } else if (_selectedLocation == WallpaperService.locationHomeScreen) {
+          await notifier.setAutoUpdateHome(true);
+          await notifier.setAutoUpdateLock(false);
+        } else if (_selectedLocation == WallpaperService.locationLockScreen) {
+          await notifier.setAutoUpdateHome(false);
+          await notifier.setAutoUpdateLock(true);
+        }
         if (settings.autoUpdate) await BackgroundService.scheduleDaily();
         await ref
             .read(appSettingsProvider.notifier)

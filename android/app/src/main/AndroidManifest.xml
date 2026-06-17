@@ -46,13 +46,6 @@
             </intent-filter>
         </receiver>
 
-        <!-- Pre-check receiver: runs at 23:50 to detect wallpaper changes
-             before the midnight Dart alarm fires -->
-        <receiver
-            android:name=".PreCheckReceiver"
-            android:enabled="true"
-            android:exported="false"/>
-
         <!-- android_alarm_manager_plus requirements -->
         <service
             android:name="dev.fluttercommunity.plus.androidalarmmanager.AlarmService"

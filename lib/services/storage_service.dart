@@ -9,8 +9,6 @@ class StorageService {
   }
 
   /// Force re-read from native SharedPreferences.
-  /// Call this in the background isolate to pick up values
-  /// written by native Kotlin code (e.g. PreCheckReceiver).
   static Future<void> reload() async {
     await _prefs.reload();
   }
@@ -56,11 +54,22 @@ class StorageService {
   static Future<void> setGoalEnd(DateTime date) =>
       _prefs.setInt(AppConstants.keyGoalEnd, date.millisecondsSinceEpoch);
 
-  // Settings
+  // Settings — master auto-update toggle
   static bool getAutoUpdate() =>
       _prefs.getBool(AppConstants.keyAutoUpdate) ?? true;
   static Future<void> setAutoUpdate(bool val) =>
       _prefs.setBool(AppConstants.keyAutoUpdate, val);
+
+  // Per-screen auto-update toggles (following reference app approach)
+  static bool getAutoUpdateHome() =>
+      _prefs.getBool(AppConstants.keyAutoUpdateHome) ?? true;
+  static Future<void> setAutoUpdateHome(bool val) =>
+      _prefs.setBool(AppConstants.keyAutoUpdateHome, val);
+
+  static bool getAutoUpdateLock() =>
+      _prefs.getBool(AppConstants.keyAutoUpdateLock) ?? true;
+  static Future<void> setAutoUpdateLock(bool val) =>
+      _prefs.setBool(AppConstants.keyAutoUpdateLock, val);
 
   static bool getLockScreen() =>
       _prefs.getBool(AppConstants.keyLockScreen) ?? true;
@@ -93,12 +102,12 @@ class StorageService {
   static Future<void> setString(String key, String val) =>
       _prefs.setString(key, val);
 
-  // Generic bool get/set (for flags like needs_reschedule)
+  // Generic bool get/set
   static bool? getBool(String key) => _prefs.getBool(key);
   static Future<void> setBool(String key, bool val) =>
       _prefs.setBool(key, val);
 
-  // Generic int get/set (for values like smart_wallpaper_location)
+  // Generic int get/set
   static int? getInt(String key) => _prefs.getInt(key);
   static Future<void> setInt(String key, int val) =>
       _prefs.setInt(key, val);

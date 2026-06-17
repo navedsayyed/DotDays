@@ -31,31 +31,11 @@ class MainActivity : FlutterActivity() {
                 }
             }
 
-        // Wallpaper ID channel — used in foreground to detect external wallpaper changes
-        // and to apply wallpaper with OEM quirk workaround
+        // Wallpaper channel — OEM-aware wallpaper setter (foreground fallback)
         MethodChannel(flutterEngine.dartExecutor.binaryMessenger, WALLPAPER_CHANNEL)
             .setMethodCallHandler { call, result ->
                 when (call.method) {
-                    "getWallpaperIds" -> {
-                        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N) {
-                            val wm = android.app.WallpaperManager.getInstance(this)
-                            val homeId = wm.getWallpaperId(android.app.WallpaperManager.FLAG_SYSTEM)
-                            val lockId = wm.getWallpaperId(android.app.WallpaperManager.FLAG_LOCK)
-                            result.success(mapOf("home" to homeId, "lock" to lockId))
-                        } else {
-                            result.success(mapOf("home" to -1, "lock" to -1))
-                        }
-                    }
-                    "saveCurrentIds" -> {
-                        WallpaperIdChecker.saveCurrentIds(this)
-                        result.success(null)
-                    }
-                    "computeSmartLocation" -> {
-                        val smart = WallpaperIdChecker.computeAndSaveSmartLocation(this)
-                        result.success(smart)
-                    }
                     "smartSetWallpaper" -> {
-                        // OEM-aware wallpaper setter that preserves the other screen
                         val imageBytes = call.argument<ByteArray>("imageBytes")
                         val location = call.argument<Int>("location")
                         if (imageBytes == null || location == null) {

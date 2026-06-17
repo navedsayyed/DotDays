@@ -13,8 +13,7 @@ import android.util.Log
  * - Quick boot (QUICKBOOT_POWERON — Xiaomi/Realme/OPPO)
  *
  * Sets a "needs_reschedule" flag so the Flutter app re-schedules the
- * midnight Dart alarm on next launch. Also re-schedules the native
- * pre-check alarm that detects external wallpaper changes.
+ * midnight Dart alarm on next launch.
  */
 class BootReceiver : BroadcastReceiver() {
 
@@ -36,14 +35,6 @@ class BootReceiver : BroadcastReceiver() {
             prefs.edit()
                 .putBoolean("flutter.needs_reschedule", true)
                 .commit()
-
-            // Re-schedule the native pre-check alarm (23:50 nightly)
-            try {
-                PreCheckReceiver.scheduleNext(context)
-                Log.d(TAG, "Pre-check alarm re-scheduled after boot")
-            } catch (e: Exception) {
-                Log.e(TAG, "Error scheduling pre-check: ${e.message}")
-            }
         }
     }
 }

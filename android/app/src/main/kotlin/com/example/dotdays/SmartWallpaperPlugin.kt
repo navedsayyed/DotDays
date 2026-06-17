@@ -16,9 +16,6 @@ import io.flutter.plugin.common.MethodChannel
  *
  * The method channel provides:
  * - smartSetWallpaper: Applies wallpaper with OEM quirk workaround
- * - saveCurrentIds: Saves current wallpaper IDs
- * - computeSmartLocation: Computes smart wallpaper location
- * - getWallpaperIds: Gets current system wallpaper IDs
  */
 class SmartWallpaperPlugin : FlutterPlugin, MethodChannel.MethodCallHandler {
 
@@ -56,22 +53,6 @@ class SmartWallpaperPlugin : FlutterPlugin, MethodChannel.MethodCallHandler {
                     result.success(success)
                 } catch (e: Exception) {
                     result.error("WALLPAPER_ERROR", e.message, null)
-                }
-            }
-            "saveCurrentIds" -> {
-                try {
-                    WallpaperIdChecker.saveCurrentIds(context)
-                    result.success(true)
-                } catch (e: Exception) {
-                    result.error("ID_ERROR", e.message, null)
-                }
-            }
-            "computeSmartLocation" -> {
-                try {
-                    val smart = WallpaperIdChecker.computeAndSaveSmartLocation(context)
-                    result.success(smart)
-                } catch (e: Exception) {
-                    result.error("ID_ERROR", e.message, null)
                 }
             }
             else -> result.notImplemented()

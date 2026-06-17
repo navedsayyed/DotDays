@@ -600,20 +600,20 @@ class _SettingsTabContent extends ConsumerWidget {
               ),
             ),
           ),
-          // Auto-update
+          // Auto-update home screen
           _SettingsTile(
-            label: 'Auto-update wallpaper',
+            label: 'Auto-update home screen',
             trailing: _Toggle(
-              value: s.autoUpdate,
-              onChanged: (v) => notifier.setAutoUpdate(v),
+              value: s.autoUpdateHome,
+              onChanged: (v) => notifier.setAutoUpdateHome(v),
             ),
           ),
-          // Lock screen
+          // Auto-update lock screen
           _SettingsTile(
-            label: 'Show on lock screen',
+            label: 'Auto-update lock screen',
             trailing: _Toggle(
-              value: s.lockScreen,
-              onChanged: (v) => notifier.setLockScreen(v),
+              value: s.autoUpdateLock,
+              onChanged: (v) => notifier.setAutoUpdateLock(v),
             ),
           ),
           // Day counter

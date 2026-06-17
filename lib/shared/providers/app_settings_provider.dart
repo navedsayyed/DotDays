@@ -17,6 +17,8 @@ class AppSettingsNotifier extends StateNotifier<AppSettings> {
     final goalStart = StorageService.getGoalStart();
     final goalEnd = StorageService.getGoalEnd();
     final autoUpdate = StorageService.getAutoUpdate();
+    final autoUpdateHome = StorageService.getAutoUpdateHome();
+    final autoUpdateLock = StorageService.getAutoUpdateLock();
     final lockScreen = StorageService.getLockScreen();
     final showDayCounter = StorageService.getShowDayCounter();
     final livedDotColorVal = StorageService.getLivedDotColor();
@@ -33,6 +35,8 @@ class AppSettingsNotifier extends StateNotifier<AppSettings> {
       goalStart: goalStart,
       goalEnd: goalEnd,
       autoUpdate: autoUpdate,
+      autoUpdateHome: autoUpdateHome,
+      autoUpdateLock: autoUpdateLock,
       lockScreen: lockScreen,
       showDayCounter: showDayCounter,
       livedDotColor: Color(livedDotColorVal),
@@ -70,6 +74,16 @@ class AppSettingsNotifier extends StateNotifier<AppSettings> {
   Future<void> setAutoUpdate(bool val) async {
     await StorageService.setAutoUpdate(val);
     state = state.copyWith(autoUpdate: val);
+  }
+
+  Future<void> setAutoUpdateHome(bool val) async {
+    await StorageService.setAutoUpdateHome(val);
+    state = state.copyWith(autoUpdateHome: val);
+  }
+
+  Future<void> setAutoUpdateLock(bool val) async {
+    await StorageService.setAutoUpdateLock(val);
+    state = state.copyWith(autoUpdateLock: val);
   }
 
   Future<void> setLockScreen(bool val) async {
