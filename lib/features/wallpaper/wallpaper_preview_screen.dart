@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import '../../shared/models/calendar_type.dart';
@@ -86,6 +87,7 @@ class _WallpaperPreviewScreenState
     if (!mounted) return;
     if (success) {
       if (!wasAlreadySetup) {
+        // Request battery optimization exemption
         final isExempt = await BatteryOptimizationService.isIgnoringBatteryOptimization();
         if (!isExempt) {
           await BatteryOptimizationService.requestIgnoreBatteryOptimization();

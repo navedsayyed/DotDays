@@ -1,10 +1,14 @@
 package com.example.dotdays
 
+import android.Manifest
 import android.content.Intent
+import android.content.pm.PackageManager
 import android.net.Uri
 import android.os.Build
 import android.os.PowerManager
 import android.provider.Settings
+import androidx.core.app.ActivityCompat
+import androidx.core.content.ContextCompat
 import io.flutter.embedding.android.FlutterActivity
 import io.flutter.embedding.engine.FlutterEngine
 import io.flutter.plugin.common.MethodChannel
@@ -12,6 +16,10 @@ import io.flutter.plugin.common.MethodChannel
 class MainActivity : FlutterActivity() {
     private val BATTERY_CHANNEL = "com.example.dotdays/battery"
     private val WALLPAPER_CHANNEL = "com.example.dotdays/wallpaper_id"
+
+    companion object {
+        private const val NOTIFICATION_PERMISSION_CODE = 1001
+    }
 
     override fun configureFlutterEngine(flutterEngine: FlutterEngine) {
         super.configureFlutterEngine(flutterEngine)
@@ -26,6 +34,13 @@ class MainActivity : FlutterActivity() {
                     }
                     "isIgnoringBatteryOptimization" -> {
                         result.success(isIgnoringBatteryOptimization())
+                    }
+                    "requestNotificationPermission" -> {
+                        requestNotificationPermission()
+                        result.success(null)
+                    }
+                    "hasNotificationPermission" -> {
+                        result.success(hasNotificationPermission())
                     }
                     else -> result.notImplemented()
                 }
@@ -72,5 +87,28 @@ class MainActivity : FlutterActivity() {
             return pm.isIgnoringBatteryOptimizations(packageName)
         }
         return true
+    }
+
+    private fun requestNotificationPermission() {
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
+            if (ContextCompat.checkSelfPermission(this, Manifest.permission.POST_NOTIFICATIONS)
+                != PackageManager.PERMISSION_GRANTED
+            ) {
+                ActivityCompat.requestPermissions(
+                    this,
+                    arrayOf(Manifest.permission.POST_NOTIFICATIONS),
+                    NOTIFICATION_PERMISSION_CODE
+                )
+            }
+        }
+        // On Android 12 and below, notifications are allowed by default
+    }
+
+    private fun hasNotificationPermission(): Boolean {
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
+            return ContextCompat.checkSelfPermission(this, Manifest.permission.POST_NOTIFICATIONS) ==
+                PackageManager.PERMISSION_GRANTED
+        }
+        return true // Pre-Android 13 doesn't need runtime permission
     }
 }

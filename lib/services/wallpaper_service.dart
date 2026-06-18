@@ -6,6 +6,7 @@ import 'package:flutter/services.dart';
 import 'package:flutter/widgets.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:wallpaper_manager_flutter/wallpaper_manager_flutter.dart';
+import 'storage_service.dart';
 
 class WallpaperService {
   WallpaperService._();
@@ -102,11 +103,23 @@ class WallpaperService {
       // Last resort: use wallpaper_manager_flutter package
       // (won't handle OEM quirks, but better than nothing)
       debugPrint('WallpaperService: using wallpaper_manager_flutter fallback');
-      final result = await WallpaperManagerFlutter().setWallpaper(
-        imageFile,
-        location,
-      );
-      return result == true;
+      // Set flag so native WallpaperChangedReceiver knows DotDays is doing this
+      await StorageService.setBool('dotdays_is_setting_wallpaper', true);
+      try {
+        final result = await WallpaperManagerFlutter().setWallpaper(
+          imageFile,
+          location,
+        );
+        // Clear flag after a short delay (broadcast is async)
+        Future.delayed(const Duration(seconds: 3), () {
+          StorageService.setBool('dotdays_is_setting_wallpaper', false);
+        });
+        return result == true;
+      } catch (e) {
+        await StorageService.setBool('dotdays_is_setting_wallpaper', false);
+        debugPrint('WallpaperService applyWallpaper error: $e');
+        return false;
+      }
     } catch (e) {
       debugPrint('WallpaperService applyWallpaper error: $e');
       return false;

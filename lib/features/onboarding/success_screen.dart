@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import '../../shared/providers/app_settings_provider.dart';
@@ -6,11 +7,42 @@ import '../../shared/widgets/app_button.dart';
 import '../../core/theme/app_colors.dart';
 import '../../routes/app_router.dart';
 
-class SuccessScreen extends ConsumerWidget {
+class SuccessScreen extends ConsumerStatefulWidget {
   const SuccessScreen({super.key});
 
   @override
-  Widget build(BuildContext context, WidgetRef ref) {
+  ConsumerState<SuccessScreen> createState() => _SuccessScreenState();
+}
+
+class _SuccessScreenState extends ConsumerState<SuccessScreen> {
+  static const _batteryChannel = MethodChannel('com.example.dotdays/battery');
+
+  @override
+  void initState() {
+    super.initState();
+    // Request notification permission after the screen is built
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      _requestNotificationPermission();
+    });
+  }
+
+  Future<void> _requestNotificationPermission() async {
+    try {
+      final hasPermission =
+          await _batteryChannel.invokeMethod<bool>('hasNotificationPermission');
+      if (hasPermission != true) {
+        // Small delay so the success screen is fully visible first
+        await Future.delayed(const Duration(milliseconds: 600));
+        if (!mounted) return;
+        await _batteryChannel.invokeMethod('requestNotificationPermission');
+      }
+    } catch (e) {
+      debugPrint('Notification permission request failed: $e');
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
     final settings = ref.watch(appSettingsProvider);
 
     return Scaffold(

@@ -45,24 +45,45 @@ object SmartWallpaperSetter {
     fun applyWallpaper(context: Context, imageBytes: ByteArray, location: Int): Boolean {
         val wm = WallpaperManager.getInstance(context)
 
-        return when (location) {
-            3 -> {
-                // Both screens — straightforward, just set it
-                setBothScreens(wm, imageBytes)
+        // Set flag so WallpaperChangedReceiver knows DotDays is doing this
+        val prefs = context.getSharedPreferences("FlutterSharedPreferences", Context.MODE_PRIVATE)
+        prefs.edit().putBoolean("flutter.dotdays_is_setting_wallpaper", true).commit()
+
+        val result = try {
+            when (location) {
+                3 -> setBothScreens(wm, imageBytes)
+                2 -> setLockScreenOnly(context, wm, imageBytes)
+                1 -> setHomeScreenOnly(context, wm, imageBytes)
+                else -> {
+                    Log.e(TAG, "Invalid location: $location")
+                    false
+                }
             }
-            2 -> {
-                // Lock screen only — must preserve home screen wallpaper
-                setLockScreenOnly(context, wm, imageBytes)
-            }
-            1 -> {
-                // Home screen only — must preserve lock screen wallpaper
-                setHomeScreenOnly(context, wm, imageBytes)
-            }
-            else -> {
-                Log.e(TAG, "Invalid location: $location")
-                false
+        } finally {
+            // Clear flag after a short delay (wallpaper broadcast may be async)
+            android.os.Handler(android.os.Looper.getMainLooper()).postDelayed({
+                prefs.edit().putBoolean("flutter.dotdays_is_setting_wallpaper", false).commit()
+                Log.d(TAG, "Cleared is_setting flag")
+            }, 3000) // 3 second delay to let broadcast fire first
+        }
+
+        // After successful apply, save current wallpaper IDs as baseline
+        // so we can detect external changes on next app open
+        if (result && Build.VERSION.SDK_INT >= Build.VERSION_CODES.N) {
+            try {
+                val homeId = wm.getWallpaperId(WallpaperManager.FLAG_SYSTEM)
+                val lockId = wm.getWallpaperId(WallpaperManager.FLAG_LOCK)
+                prefs.edit()
+                    .putInt("flutter.dotdays_last_home_id", homeId)
+                    .putInt("flutter.dotdays_last_lock_id", lockId)
+                    .commit()
+                Log.d(TAG, "Saved wallpaper IDs: home=$homeId, lock=$lockId")
+            } catch (e: Exception) {
+                Log.w(TAG, "Could not save wallpaper IDs: ${e.message}")
             }
         }
+
+        return result
     }
 
     /**

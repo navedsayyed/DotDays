@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:intl/intl.dart';
@@ -614,6 +615,35 @@ class _SettingsTabContent extends ConsumerWidget {
             trailing: _Toggle(
               value: s.autoUpdateLock,
               onChanged: (v) => notifier.setAutoUpdateLock(v),
+            ),
+          ),
+          // Info tip about auto-update
+          Container(
+            margin: const EdgeInsets.only(top: 8, bottom: 4),
+            padding: const EdgeInsets.all(12),
+            decoration: BoxDecoration(
+              color: const Color(0xFF141820),
+              border: Border.all(color: const Color(0xFF2A2F3A)),
+              borderRadius: BorderRadius.circular(8),
+            ),
+            child: const Row(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Icon(Icons.info_outline_rounded,
+                    color: Color(0xFF6B7280), size: 16),
+                SizedBox(width: 10),
+                Expanded(
+                  child: Text(
+                    'If you set a wallpaper from Gallery, turn off auto-update '
+                    'for that screen to keep it. DotDays updates at midnight.',
+                    style: TextStyle(
+                      color: Color(0xFF6B7280),
+                      fontSize: 11,
+                      height: 1.5,
+                    ),
+                  ),
+                ),
+              ],
             ),
           ),
           // Day counter

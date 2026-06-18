@@ -23,8 +23,6 @@ void main() async {
 }
 
 /// Request battery optimization exemption on first run after onboarding.
-/// This is critical for Xiaomi, Realme, Samsung, etc. that aggressively
-/// kill background tasks.
 Future<void> _requestBatteryOptimizationIfNeeded() async {
   final onboardingDone = StorageService.getOnboardingComplete();
   if (!onboardingDone) return;
@@ -36,36 +34,11 @@ Future<void> _requestBatteryOptimizationIfNeeded() async {
   }
 }
 
-class LifeInDotsApp extends ConsumerStatefulWidget {
+class LifeInDotsApp extends ConsumerWidget {
   const LifeInDotsApp({super.key});
 
   @override
-  ConsumerState<LifeInDotsApp> createState() => _LifeInDotsAppState();
-}
-
-class _LifeInDotsAppState extends ConsumerState<LifeInDotsApp> with WidgetsBindingObserver {
-  @override
-  void initState() {
-    super.initState();
-    WidgetsBinding.instance.addObserver(this);
-  }
-
-  @override
-  void dispose() {
-    WidgetsBinding.instance.removeObserver(this);
-    super.dispose();
-  }
-
-  @override
-  void didChangeAppLifecycleState(AppLifecycleState state) {
-    if (state == AppLifecycleState.resumed) {
-      // Re-ensure the alarm is still scheduled
-      BackgroundService.ensureScheduled();
-    }
-  }
-
-  @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
     final router = ref.watch(routerProvider);
 
     return MaterialApp.router(
